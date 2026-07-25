@@ -1,0 +1,14 @@
+# Nix build outputs
+/result
+result
+result-*
+
+# Editor/OS files
+.DS_Store
+*.swp
+*~
+
+# Local secrets; keep real secrets out of git
+secrets/
+*.age
+*.key
