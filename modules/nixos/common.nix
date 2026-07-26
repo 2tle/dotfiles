@@ -50,7 +50,7 @@
 
   # System-wide Hyprland keybindings
   environment.etc."xdg/hypr/hyprland.conf".text = ''
-    bind = SUPER, E, exec, thunar
+    bind = SUPER, E, exec, kitty -e mc
   '';
 
   # Prefer native Wayland for Chromium/Electron applications
@@ -61,7 +61,7 @@
   # Printing
   services.printing.enable = true;
 
-  # File manager support for Thunar: trash, mounts, thumbnails, etc.
+  # File manager support: trash, mounts, thumbnails, etc.
   services.gvfs.enable = true;
   services.tumbler.enable = true;
 
@@ -130,10 +130,8 @@
     playerctl
     networkmanagerapplet
 
-    # File explorer
-    xfce.thunar
-    xfce.thunar-volman
-    xfce.tumbler
+    # Terminal file manager
+    mc
   ];
 
   # Keep this at the release used for the first installation.
