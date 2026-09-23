@@ -23,7 +23,6 @@
       "inputs": {
         "flake-parts": "flake-parts",
         "nixpkgs": [
-          "omp",
           "nixpkgs"
         ],
         "systems": "systems_2",
@@ -47,7 +46,6 @@
       "inputs": {
         "flake-parts": "flake-parts_2",
         "nixpkgs": [
-          "omp",
           "nixpkgs-darwin-x64"
         ],
         "systems": "systems_3",
@@ -70,7 +68,6 @@
     "flake-parts": {
       "inputs": {
         "nixpkgs-lib": [
-          "omp",
           "bun2nix",
           "nixpkgs"
         ]
@@ -92,7 +89,6 @@
     "flake-parts_2": {
       "inputs": {
         "nixpkgs-lib": [
-          "omp",
           "bun2nix-darwin-x64",
           "nixpkgs"
         ]
@@ -132,7 +128,6 @@
     "nix-bun": {
       "inputs": {
         "nixpkgs": [
-          "omp",
           "nixpkgs"
         ]
       },
@@ -214,40 +209,15 @@
         "type": "github"
       }
     },
-    "omp": {
-      "inputs": {
-        "bun2nix": "bun2nix",
-        "bun2nix-darwin-x64": "bun2nix-darwin-x64",
-        "nix-bun": "nix-bun",
-        "nixpkgs": "nixpkgs_3",
-        "nixpkgs-darwin-x64": "nixpkgs-darwin-x64",
-        "rust-overlay": "rust-overlay"
-      },
-      "locked": {
-        "lastModified": 1790118515,
-        "narHash": "sha256-hxuGYuPchiLsiV4q8yy7kOrSJ8BJz9GWrSd4XTMx9jY=",
-        "owner": "can1357",
-        "repo": "oh-my-pi",
-        "rev": "da58b16f424273605795435a6753778f422baff3",
-        "type": "github"
-      },
-      "original": {
-        "owner": "can1357",
-        "repo": "oh-my-pi",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "bongocat": "bongocat",
-        "nixpkgs": "nixpkgs_2",
-        "omp": "omp"
+        "nixpkgs": "nixpkgs_2"
       }
     },
     "rust-overlay": {
       "inputs": {
         "nixpkgs": [
-          "omp",
           "nixpkgs"
         ]
       },
@@ -313,7 +283,6 @@
     "treefmt-nix": {
       "inputs": {
         "nixpkgs": [
-          "omp",
           "bun2nix",
           "nixpkgs"
         ]
@@ -335,7 +304,6 @@
     "treefmt-nix_2": {
       "inputs": {
         "nixpkgs": [
-          "omp",
           "bun2nix-darwin-x64",
           "nixpkgs"
         ]

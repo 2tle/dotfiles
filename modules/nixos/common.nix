@@ -50,6 +50,7 @@
 
   # System-wide Hyprland keybindings
   environment.etc."xdg/hypr/hyprland.conf".text = ''
+    bind = SUPER, Return, exec, kitty
     bind = SUPER, E, exec, kitty -e mc
   '';
 
@@ -121,7 +122,6 @@
     waybar
     wofi
     dunst
-    hyprpaper
     wl-clipboard
     grim
     slurp

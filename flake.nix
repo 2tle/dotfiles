@@ -4,10 +4,9 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     bongocat.url = "github:saatvik333/wayland-bongocat";
-    omp.url = "github:can1357/oh-my-pi";
   };
 
-  outputs = { self, nixpkgs, bongocat, omp, ... }:
+  outputs = { self, nixpkgs, bongocat, ... }:
     let
       system = "x86_64-linux";
     in
@@ -24,7 +23,6 @@
           modules = [
             ./hosts/stringju-work/configuration.nix
             bongocat.nixosModules.default
-            omp.nixosModules.default
           ];
         };
       };
