@@ -12,7 +12,8 @@ let
         "npm:pi-web-access",
         "npm:@narumitw/pi-usage",
         "npm:@narumitw/pi-accounts",
-        "npm:@narumitw/pi-btw"
+        "npm:@narumitw/pi-btw",
+        "npm:@2tle/pi-provider-manager"
       ]
     }
     EOF
@@ -23,7 +24,7 @@ let
   # their argv intact.
   pi = pkgs.writeShellApplication {
     name = "pi";
-    runtimeInputs = [ pkgs.pnpm ];
+    runtimeInputs = [ pkgs.nodejs pkgs.pnpm ];
     text = ''
       exec pnpx --allow-build=@google/genai --allow-build=protobufjs --allow-build=esbuild @earendil-works/pi-coding-agent@latest "$@"
     '';
@@ -46,14 +47,17 @@ in
     "d /home/${username}/.local/state/overlays/pi/work 0755 ${username} users -"
   ];
 
-  # Pi reads the package list from settings, but downloads npm packages itself.
-  # Install them as the user at login so switch does not run npm as root.
-  systemd.user.services.pi-package-install = {
+  # Pi downloads npm packages itself. Run its CLI as the user from the
+  # activation script on every switch (never as root).
+  systemd.services.pi-package-install = {
     description = "Install configured Pi packages";
-    wantedBy = [ "default.target" ];
+    wants = [ "network-online.target" ];
     after = [ "network-online.target" ];
+    environment.HOME = "/home/${username}";
+    path = [ pkgs.nodejs pkgs.pnpm ];
     serviceConfig = {
       Type = "oneshot";
+      User = username;
       ExecStart = pkgs.writeShellScript "install-pi-packages" ''
         set -eu
         ${pi}/bin/pi install npm:@juicesharp/rpiv-ask-user-question
@@ -61,9 +65,14 @@ in
         ${pi}/bin/pi install npm:@narumitw/pi-usage
         ${pi}/bin/pi install npm:@narumitw/pi-accounts
         ${pi}/bin/pi install npm:@narumitw/pi-btw
+        ${pi}/bin/pi install npm:@2tle/pi-provider-manager
       '';
     };
   };
+
+  system.activationScripts.installPiPackages.text = ''
+    ${pkgs.systemd}/bin/systemctl start --no-block pi-package-install.service || true
+  '';
 
   environment.systemPackages = [ pi ];
 }

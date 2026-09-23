@@ -58,6 +58,12 @@
     misc:focus_on_activate = true
     bind = SUPER, Return, exec, kitty
     bind = SUPER, E, exec, kitty -e mc
+    bind = SUPER, Q, killactive,
+  '';
+
+  # System-wide Kitty default; user config can override it.
+  environment.etc."xdg/kitty/kitty.conf".text = ''
+    background_opacity 0.75
   '';
 
   # Prefer native Wayland for Chromium/Electron applications
