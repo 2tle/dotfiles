@@ -1,6 +1,11 @@
 { config, pkgs, ... }:
 
 {
+  imports = [
+    ./performance.nix
+    ./pi.nix
+  ];
+
   # Networking
   networking.networkmanager.enable = true;
 
@@ -50,6 +55,7 @@
 
   # System-wide Hyprland keybindings
   environment.etc."xdg/hypr/hyprland.conf".text = ''
+    misc:focus_on_activate = true
     bind = SUPER, Return, exec, kitty
     bind = SUPER, E, exec, kitty -e mc
   '';
@@ -109,7 +115,7 @@
     gh
     github-desktop
     nodejs
-    pi-coding-agent
+    pnpm
 
     # Browser
     google-chrome

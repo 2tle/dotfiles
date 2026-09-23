@@ -99,8 +99,7 @@ in
   programs.wayland-bongocat = {
     enable = true;
     autostart = true;
-    # Run bongocat-find-devices on this PC and set inputDeviceNames if
-    # automatic detection does not pick the correct keyboard.
+    inputDeviceNames = [ "USB Wired Keyboard" ];
   };
   users.users.stringju.extraGroups = [ "input" ];
 
