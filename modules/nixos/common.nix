@@ -4,6 +4,7 @@
   imports = [
     ./performance.nix
     ./pi.nix
+    ./orca-ade.nix
   ];
 
   # Networking
