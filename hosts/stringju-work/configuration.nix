@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 let
   # hyprpaper's contain mode uses an opaque black canvas by default. Patch only
@@ -17,6 +17,31 @@ in
   ];
 
   networking.hostName = "stringju-work";
+
+  # The shared module installs Fcitx5 and fcitx5-hangul; make both English and
+  # Korean available in the default group on this host.
+  i18n.inputMethod.fcitx5.settings.inputMethod = {
+    GroupOrder."0" = "Default";
+    "Groups/0" = {
+      Name = "Default";
+      "Default Layout" = "us";
+      DefaultIM = "hangul";
+    };
+    "Groups/0/Items/0".Name = "keyboard-us";
+    "Groups/0/Items/1" = {
+      Name = "hangul";
+      Layout = "us";
+    };
+  };
+
+  # Hyprland does not start XDG autostart entries on its own.
+  systemd.user.services.fcitx5 = {
+    description = "Fcitx5 input method";
+    wantedBy = [ "graphical-session.target" ];
+    partOf = [ "graphical-session.target" ];
+    after = [ "graphical-session.target" ];
+    serviceConfig.ExecStart = "${config.i18n.inputMethod.package}/bin/fcitx5";
+  };
 
   # This profile matches any wired NIC. If the PC has more than one, set
   # connection."interface-name" to the intended interface before applying.

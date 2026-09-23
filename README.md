@@ -120,6 +120,7 @@ git push
 5. Bongo Cat은 로그인 시 자동 실행됩니다. 키 입력이 안 잡히면 `bongocat-find-devices`로 장치를 확인하고 `programs.wayland-bongocat.inputDeviceNames`를 기기별로 지정하세요. `input` 그룹 추가 후 재로그인이 필요하며, 이 그룹은 키보드 입력 장치에 대한 접근을 허용하므로 신뢰할 수 있는 사용자에게만 부여하세요.
 6. OMP는 설치되지만 서비스 계정 인증은 포함되지 않습니다. 대상 PC에서 `omp` 실행 후 `/login openai-codex`, `/login opencode-go`를 각각 진행하세요. 인증 정보/API 키는 **공개 저장소에 커밋하지 마세요**.
 7. Cloudflare WARP 클라이언트와 데몬은 설치·활성화됩니다. 현재 미니 PC처럼 Zero Trust 조직 `stringju`에 연결하려면 대상 PC에서 `warp-cli registration new stringju`로 브라우저 인증을 마친 뒤 `warp-cli connect`를 실행하세요. 기기 등록 정보는 `/var/lib/cloudflare-warp`에 로컬로 저장되며 공개 dotfiles에 포함되지 않습니다. 조직 정책이 Always On이면 이후 연결 상태는 정책에 따릅니다.
+8. 한글 입력기는 공통 Fcitx5 설치를 사용하고, 이 호스트에서 영문(US)·한글을 기본 입력 그룹에 등록해 로그인 시 시작합니다. `Ctrl+Space`로 한/영 입력을 전환하세요. 기존 `~/.config/fcitx5/profile`이 있다면 사용자 설정이 시스템 기본값보다 우선하므로 Fcitx5 설정 도구에서 한글 입력기를 추가하거나 기존 프로필을 정리하세요.
 
 적용 전/후 확인(대상 PC에서 실행):
 
@@ -129,7 +130,7 @@ git add background hosts/stringju-work flake.nix flake.lock
 sudo nixos-rebuild build --flake .#stringju-work
 sudo nixos-rebuild switch --flake .#stringju-work
 ip -4 addr; ip -4 route; resolvectl status
-systemctl --user status stringju-wallpaper wayland-bongocat
+systemctl --user status fcitx5 stringju-wallpaper wayland-bongocat
 systemctl status cloudflare-warp
 warp-cli status
 omp --version
