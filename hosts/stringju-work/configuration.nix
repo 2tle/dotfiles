@@ -168,12 +168,20 @@ in
     "net.ipv4.ip_forward" = 1;
   };
 
-  # NAT all forwarded traffic arriving over WARP and leaving via the wired
-  # uplink, so replies return through this host. Routing policy controls which
-  # destinations the WARP clients send here.
   networking.nftables = {
     enable = true;
     ruleset = ''
+      # Conntrack runs before priority -10. Never drop replies to connections
+      # initiated by this machine through its public address.
+      table ip public-ingress {
+        chain input {
+          type filter hook input priority -10; policy accept;
+          iifname != "lo" ip daddr 115.145.150.233 ct state != { established, related } drop
+        }
+      }
+
+      # Only forwarded WARP client traffic needs NAT; locally initiated traffic
+      # already leaves via the wired interface with its public source address.
       table ip warp-forward {
         chain postrouting {
           type nat hook postrouting priority srcnat; policy accept;
@@ -183,12 +191,13 @@ in
     '';
   };
 
-  # WARP is the only trusted ingress interface. Explicitly drop every packet
-  # addressed to this host arriving on the public wired NIC (enp2s0), including
-  # SSH; this is enforced before the standard NixOS firewall chains.
+  # WARP is the only trusted ingress interface. The public-ingress chain above
+  # drops unsolicited IPv4 input (including ping) to the public address, even
+  # if another service later opens a port in the standard NixOS firewall.
   networking.firewall = {
     enable = true;
     trustedInterfaces = [ "CloudflareWARP" ];
+    allowPing = false;
     allowedTCPPorts = [ ];
     allowedUDPPorts = [ ];
   };
