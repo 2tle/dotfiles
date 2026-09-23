@@ -174,6 +174,13 @@ in
   networking.nftables = {
     enable = true;
     ruleset = ''
+      table inet deny-public-ingress {
+        chain input {
+          type filter hook input priority -10; policy accept;
+          iifname "enp2s0" drop
+        }
+      }
+
       table ip warp-forward {
         chain postrouting {
           type nat hook postrouting priority srcnat; policy accept;
@@ -183,9 +190,9 @@ in
     '';
   };
 
-  # Treat WARP as the only trusted ingress interface. The public wired NIC
-  # (enp2s0 / 115.145.150.233) has no opened inbound ports, so unsolicited
-  # traffic from the public network is dropped by the firewall.
+  # WARP is the only trusted ingress interface. Explicitly drop every packet
+  # addressed to this host arriving on the public wired NIC (enp2s0), including
+  # SSH; this is enforced before the standard NixOS firewall chains.
   networking.firewall = {
     enable = true;
     trustedInterfaces = [ "CloudflareWARP" ];
