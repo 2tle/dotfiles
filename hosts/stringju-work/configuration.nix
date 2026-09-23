@@ -174,13 +174,6 @@ in
   networking.nftables = {
     enable = true;
     ruleset = ''
-      table inet deny-public-ingress {
-        chain input {
-          type filter hook input priority -10; policy accept;
-          iifname "enp2s0" drop
-        }
-      }
-
       table ip warp-forward {
         chain postrouting {
           type nat hook postrouting priority srcnat; policy accept;
