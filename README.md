@@ -119,6 +119,7 @@ git push
 4. 배경 이미지를 `background/`에 넣고 git에 추가합니다(PNG/JPG/JPEG/BMP/WebP/SVG). 빌드 시 파일이 Nix store에 복사되므로, 이미지를 바꾸면 다시 빌드해야 합니다. 이미지들은 **파일 이름 순서로 1분마다 순환**합니다. `hyprpaper` 자체의 디렉터리·타이머 기능을 사용하므로 런타임 셸이나 `sleep` 루프는 없습니다. `contain` 모드로 화면 비율을 유지하고, 1024×1024 이미지 밖의 남는 화면은 흰색이 되도록 이 호스트의 `hyprpaper` 배경 캔버스를 패치했습니다.
 5. Bongo Cat은 로그인 시 자동 실행됩니다. 키 입력이 안 잡히면 `bongocat-find-devices`로 장치를 확인하고 `programs.wayland-bongocat.inputDeviceNames`를 기기별로 지정하세요. `input` 그룹 추가 후 재로그인이 필요하며, 이 그룹은 키보드 입력 장치에 대한 접근을 허용하므로 신뢰할 수 있는 사용자에게만 부여하세요.
 6. OMP는 설치되지만 서비스 계정 인증은 포함되지 않습니다. 대상 PC에서 `omp` 실행 후 `/login openai-codex`, `/login opencode-go`를 각각 진행하세요. 인증 정보/API 키는 **공개 저장소에 커밋하지 마세요**.
+7. Cloudflare WARP 클라이언트와 데몬은 설치·활성화됩니다. 현재 미니 PC처럼 Zero Trust 조직 `stringju`에 연결하려면 대상 PC에서 `warp-cli registration new stringju`로 브라우저 인증을 마친 뒤 `warp-cli connect`를 실행하세요. 기기 등록 정보는 `/var/lib/cloudflare-warp`에 로컬로 저장되며 공개 dotfiles에 포함되지 않습니다. 조직 정책이 Always On이면 이후 연결 상태는 정책에 따릅니다.
 
 적용 전/후 확인(대상 PC에서 실행):
 
@@ -129,10 +130,12 @@ sudo nixos-rebuild build --flake .#stringju-work
 sudo nixos-rebuild switch --flake .#stringju-work
 ip -4 addr; ip -4 route; resolvectl status
 systemctl --user status stringju-wallpaper wayland-bongocat
+systemctl status cloudflare-warp
+warp-cli status
 omp --version
 ```
 
-설정한 IPv4는 `115.145.150.233/32`, 기본 경로는 `115.145.150.1`(on-link), DNS는 `8.8.8.8`입니다. 이 네트워크는 접속 중일 때만 적용되며 Wi-Fi/VPN이나 다른 연결이 DNS·경로 우선순위를 변경할 수 있습니다. 공인 IP는 다른 기기에서 동시에 쓰지 마세요.
+설정한 IPv4는 `115.145.150.233/32`, 기본 경로는 `115.145.150.1`(on-link), DNS는 `8.8.8.8`입니다. 이 네트워크는 접속 중일 때만 적용되며 Wi-Fi/VPN이나 다른 연결이 DNS·경로 우선순위를 변경할 수 있습니다. 특히 현재 `stringju` WARP 조직 정책은 WARP+DoH 모드이므로 **WARP 연결 중 실제 DNS는 Cloudflare Gateway 정책을 따르고 8.8.8.8이 아닙니다**. WARP 연결이 끊긴 기본 유선 프로필에서는 8.8.8.8을 사용합니다. 공인 IP는 다른 기기에서 동시에 쓰지 마세요.
 
 패키지는 `flake.lock`에 고정됩니다. 최신 26.05 안정판 패키지로 갱신하려면 `nix flake update` 후 빌드와 검증을 거쳐 적용하세요. 무조건 최상류 최신 Hyprland/Nix를 설치하는 방식은 아닙니다.
 

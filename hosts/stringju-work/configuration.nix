@@ -80,4 +80,11 @@ in
   users.users.stringju.extraGroups = [ "input" ];
 
   programs.omp.enable = true;
+
+  # Installs warp-cli and keeps the WARP daemon available at boot. Device
+  # registration is intentionally local state under /var/lib/cloudflare-warp.
+  services.cloudflare-warp = {
+    enable = true;
+    openFirewall = true;
+  };
 }
