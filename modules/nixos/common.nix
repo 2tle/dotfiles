@@ -105,11 +105,13 @@ in
     [Settings]
     gtk-cursor-theme-name=Bibata-Modern-Classic
     gtk-cursor-theme-size=24
+    gtk-font-name=Pretendard JP 11
   '';
   environment.etc."gtk-4.0/settings.ini".text = ''
     [Settings]
     gtk-cursor-theme-name=Bibata-Modern-Classic
     gtk-cursor-theme-size=24
+    gtk-font-name=Pretendard JP 11
   '';
 
   # Printing
@@ -147,7 +149,9 @@ in
   nixpkgs.config.allowUnfree = true;
 
   # Korean, emoji, and consistent outlined icons for Waybar.
+  fonts.fontconfig.defaultFonts.sansSerif = [ "Pretendard JP" "Noto Sans CJK KR" ];
   fonts.packages = with pkgs; [
+    pretendard-jp
     noto-fonts
     noto-fonts-cjk-sans
     noto-fonts-color-emoji

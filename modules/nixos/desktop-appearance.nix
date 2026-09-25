@@ -78,7 +78,7 @@ in
   '';
   environment.etc."xdg/waybar/style.css".text = ''
     * {
-      font-family: "Noto Sans", "Noto Sans CJK KR", sans-serif;
+      font-family: "Pretendard JP", "Noto Sans CJK KR", sans-serif;
       font-size: 13px;
       min-height: 0;
       border: none;
