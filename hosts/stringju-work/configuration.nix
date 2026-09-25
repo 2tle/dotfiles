@@ -279,21 +279,18 @@ in
     serviceConfig.ExecStart = "${config.i18n.inputMethod.package}/bin/fcitx5";
   };
 
-  # A restrained macOS-inspired top bar; intentionally no dock.
+  # Edge-to-edge menu bar inspired by macOS; intentionally no dock.
   environment.etc."xdg/waybar/config".text = ''
     {
       "layer": "top",
       "position": "top",
-      "height": 38,
-      "margin-top": 8,
-      "margin-left": 14,
-      "margin-right": 14,
-      "spacing": 8,
+      "height": 34,
+      "spacing": 6,
       "modules-left": ["custom/appmenu", "hyprland/workspaces"],
       "modules-center": [],
       "modules-right": ["network", "pulseaudio", "tray", "clock"],
       "custom/appmenu": {
-        "format": "앱 메뉴",
+        "format": "◈  앱 메뉴",
         "tooltip": "앱 목록 열기",
         "on-click": "${pkgs.wofi}/bin/wofi --show drun"
       },
@@ -305,8 +302,8 @@ in
       },
       "network": {
         "format-wifi": "◉  {essid}",
-        "format-ethernet": "◆  Wired",
-        "format-disconnected": "○  Offline",
+        "format-ethernet": "◆  유선",
+        "format-disconnected": "○  오프라인",
         "tooltip": false
       },
       "pulseaudio": {
@@ -317,7 +314,7 @@ in
         "tooltip": false
       },
       "clock": {
-        "format": "{:%a %b %d  ·  %H:%M}",
+        "format": "{:%m월 %d일  %a  %H:%M}",
         "tooltip": false
       },
       "tray": {"spacing": 8}
@@ -331,39 +328,39 @@ in
       border: none;
     }
     window#waybar {
-      background: transparent;
-      color: #f3f4f6;
+      background: rgba(24, 27, 34, 0.90);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+      color: #f4f5f7;
     }
-    .modules-left, .modules-center, .modules-right {
-      background: rgba(25, 27, 32, 0.88);
-      border: 1px solid rgba(255, 255, 255, 0.10);
-      border-radius: 18px;
-      padding: 0 10px;
-    }
+    .modules-left { padding-left: 10px; }
+    .modules-right { padding-right: 12px; }
     #custom-appmenu {
       color: #ffffff;
-      font-weight: 600;
-      padding: 0 10px;
-      border-radius: 12px;
+      font-weight: 700;
+      padding: 0 13px;
     }
-    #custom-appmenu:hover { background: rgba(255, 255, 255, 0.10); }
+    #custom-appmenu:hover, #workspaces button:hover,
+    #network:hover, #pulseaudio:hover, #clock:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
     #workspaces button {
-      color: #aeb4c0;
-      padding: 0 8px;
-      border-radius: 12px;
-      transition: all 120ms ease;
+      color: #abb2c0;
+      padding: 0 9px;
+      border-radius: 5px;
     }
     #workspaces button.active {
       color: #ffffff;
-      background: rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.18);
+      font-weight: 700;
     }
-    #workspaces button:hover { background: rgba(255, 255, 255, 0.10); }
-    #network, #pulseaudio, #tray, #clock { padding: 0 7px; }
+    #network, #pulseaudio, #clock { padding: 0 9px; }
+    #tray { padding: 0 6px; }
     #clock { color: #ffffff; font-weight: 600; }
     tooltip {
       background: #20232a;
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 10px;
+      color: #f4f5f7;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 6px;
     }
   '';
   systemd.user.services.waybar = {

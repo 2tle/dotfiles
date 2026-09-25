@@ -144,11 +144,13 @@ in
     git
     gh
     github-desktop
+    vscode
     nodejs
     pnpm
 
-    # Browser
+    # Browser and chat (Discord provides a .desktop entry for Wofi's app menu)
     google-chrome
+    discord
 
     # Fcitx5 configuration GUI
     kdePackages.fcitx5-configtool
