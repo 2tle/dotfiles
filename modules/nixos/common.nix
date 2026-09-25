@@ -1,5 +1,24 @@
 { config, pkgs, ... }:
 
+let
+  wallpaperNames = builtins.filter (name: builtins.match ".*\\.png" name != null) (
+    builtins.attrNames (builtins.readDir ../../background)
+  );
+  wallpaperPaths = builtins.map (name: "${../../background}/${name}") wallpaperNames;
+  catppuccinLogin = (pkgs.catppuccin-sddm.override {
+    loginBackground = true;
+    clockEnabled = false;
+  }).overrideAttrs (old: {
+    postInstall = (old.postInstall or "") + ''
+      # Pick one of the Nix-store wallpapers each time the SDDM greeter starts.
+      substituteInPlace "$out/share/sddm/themes/catppuccin-mocha-mauve/Main.qml" \
+        --replace-fail 'color: "#1E1E2E"' 'color: "#FFFFFF"' \
+        --replace-fail 'fillMode: Image.PreserveAspectCrop' 'fillMode: Image.PreserveAspectFit' \
+        --replace-fail 'source: config.Background' \
+          'source: ${builtins.toJSON wallpaperPaths}[Math.floor(Math.random() * ${toString (builtins.length wallpaperPaths)})]'
+    '';
+  });
+in
 {
   imports = [
     ./performance.nix
@@ -42,10 +61,12 @@
     };
   };
 
-  # Display manager
+  # Display manager: rotate the existing wallpapers on each login screen.
   services.displayManager.sddm = {
     enable = true;
     wayland.enable = true;
+    theme = "catppuccin-mocha-mauve";
+    extraPackages = [ catppuccinLogin ];
   };
 
   # Hyprland
@@ -115,6 +136,8 @@
 
   # System packages shared by machines
   environment.systemPackages = with pkgs; [
+    catppuccinLogin
+
     # Development tools
     vim
     wget

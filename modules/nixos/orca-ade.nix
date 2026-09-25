@@ -1,8 +1,26 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   orcaAppImagePath = "/opt/orca-ade/orca-linux.AppImage";
   orcaLatestUrl = "https://github.com/stablyai/orca/releases/latest/download/orca-linux.AppImage";
+
+  # Orca rebuilds terminal PATH inside its FHS environment. Provide pi in
+  # /usr/bin (which Orca keeps on PATH), delegating to the active NixOS system
+  # so switching generations does not leave a stale store path behind.
+  piShim = pkgs.writeShellScriptBin "pi" ''
+    exec /run/current-system/sw/bin/pi "$@"
+  '';
+
+  orcaRunner = pkgs.appimage-run.override {
+    # nixpkgs' FHS profile prefixes the terminal prompt with
+    # "appimage-run-fhsenv:"; Orca terminals should show the real user/host.
+    appimageTools = pkgs.appimageTools // {
+      defaultFhsEnvArgs = pkgs.appimageTools.defaultFhsEnvArgs // {
+        profile = ''export PS1='\u@\h:\w\$ ' '';
+      };
+    };
+    extraPkgs = p: [ p.git p.gh p.procps p.xorg-server p.systemd piShim ];
+  };
 
   orcaAde = pkgs.writeShellScriptBin "orca-ade" ''
     set -euo pipefail
@@ -13,7 +31,10 @@ let
       exit 1
     fi
 
-    exec ${pkgs.appimage-run}/bin/appimage-run ${orcaAppImagePath} "$@"
+    # AppImage's AppRun replaces PATH; keep host tools visible to Orca and its
+    # subprocesses (notably git, ps, Xvfb and systemd-run).
+    export PATH="${pkgs.lib.makeBinPath [ pkgs.git pkgs.gh pkgs.procps pkgs.xorg-server pkgs.systemd ]}:$PATH"
+    exec ${orcaRunner}/bin/appimage-run ${orcaAppImagePath} "$@"
   '';
 
   orcaAlias = pkgs.writeShellScriptBin "orca" ''
@@ -61,32 +82,24 @@ let
   '';
 in
 {
-  environment.systemPackages = [
-    orcaAde
-    orcaAlias
-    orcaDesktop
-  ];
+  options.programs.orca-ade.desktopEntry = lib.mkEnableOption "Orca ADE graphical client launcher";
 
-  systemd.services.orca-ade-update = {
-    description = "Install/update Orca ADE latest AppImage";
-    wants = [ "network-online.target" ];
-    after = [ "network-online.target" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = updateScript;
-    };
-  };
+  config = {
+    environment.systemPackages = [
+      orcaAde
+      orcaAlias
+    ] ++ lib.optional config.programs.orca-ade.desktopEntry orcaDesktop;
 
-  systemd.timers.orca-ade-update = {
-    description = "Periodically update Orca ADE to the latest release";
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnBootSec = "2min";
-      OnCalendar = "hourly";
-      RandomizedDelaySec = "15min";
-      Persistent = true;
-      Unit = "orca-ade-update.service";
+    systemd.services.orca-ade-update = {
+      description = "Install/update Orca ADE latest AppImage";
+      wants = [ "network-online.target" ];
+      after = [ "network-online.target" ];
+      # Upgrades are manual: replacing the binary under a running server can
+      # invalidate restored sessions or change the remote protocol unexpectedly.
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = updateScript;
+      };
     };
   };
 }

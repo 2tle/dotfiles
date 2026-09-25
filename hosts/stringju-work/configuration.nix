@@ -162,6 +162,10 @@ in
 
   networking.hostName = "stringju-work";
 
+  # Decrypt sops-nix secrets with this machine's existing SSH host key.
+  sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+  environment.systemPackages = with pkgs; [ sops age ssh-to-age ];
+
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   boot.kernel.sysctl = {
@@ -210,6 +214,43 @@ in
       PasswordAuthentication = true;
       KbdInteractiveAuthentication = true;
       PermitRootLogin = "no";
+    };
+  };
+
+  # Keep the Orca daemon and its terminal scopes in this user's session even
+  # when nobody is logged into the graphical desktop.
+  users.users.stringju.linger = true;
+
+  systemd.services.orca-serve = {
+    description = "Orca remote server over Cloudflare WARP";
+    wantedBy = [ "multi-user.target" ];
+    wants = [ "network-online.target" "cloudflare-warp.service" ];
+    after = [ "network-online.target" "cloudflare-warp.service" ];
+    startLimitIntervalSec = 300;
+    startLimitBurst = 10;
+    serviceConfig = {
+      Type = "simple";
+      User = "stringju";
+      WorkingDirectory = "/home/stringju";
+      Environment = "LIBGL_ALWAYS_SOFTWARE=1";
+      KillMode = "mixed";
+      Restart = "on-failure";
+      RestartPreventExitStatus = 3; # Existing desktop instance owns the profile.
+      RestartSec = 10;
+      ExecStart = pkgs.writeShellScript "orca-serve" ''
+        set -eu
+        # WARP can connect after network-online; advertise its current address,
+        # not a public IP or localhost. Never expose Orca on the public NIC.
+        for attempt in $(${pkgs.coreutils}/bin/seq 1 60); do
+          address="$(${pkgs.iproute2}/bin/ip -4 -o addr show dev CloudflareWARP 2>/dev/null | ${pkgs.gawk}/bin/awk '{ split($4, parts, "/"); print parts[1]; exit }')"
+          if [ -n "$address" ]; then
+            exec ${config.system.path}/bin/orca-ade serve --port 6768 --pairing-address "$address"
+          fi
+          ${pkgs.coreutils}/bin/sleep 5
+        done
+        echo "Orca: Cloudflare WARP address unavailable" >&2
+        exit 1
+      '';
     };
   };
 

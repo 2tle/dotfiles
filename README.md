@@ -140,9 +140,74 @@ omp --version
 
 패키지는 `flake.lock`에 고정됩니다. 최신 26.05 안정판 패키지로 갱신하려면 `nix flake update` 후 빌드와 검증을 거쳐 적용하세요. 무조건 최상류 최신 Hyprland/Nix를 설치하는 방식은 아닙니다.
 
+## `thinkpad-t14-gen2` 노트북 클라이언트
+
+공통 단축키·로그인 배경·패키지를 사용하고, 미니PC와 동일한 Waybar·Fcitx5·순환 배경 설정을 적용합니다. Cloudflare WARP는 **클라이언트 전용**이며 미니PC의 포워딩·NAT·고정 IP·방화벽 신뢰 인터페이스나 Orca 서버 서비스를 사용하지 않습니다. Orca ADE는 앱 메뉴에서 실행하는 GUI 클라이언트입니다. AppImage는 첫 실행 전 노트북에서 `sudo systemctl start orca-ade-update.service`로 수동 설치해야 합니다.
+
+```sh
+sudo nixos-rebuild build --flake .#thinkpad-t14-gen2
+sudo nixos-rebuild switch --flake .#thinkpad-t14-gen2
+warp-cli registration new stringju  # 해당 조직에 등록할 때만 (브라우저 인증)
+warp-cli connect
+```
+
+WARP 조직 등록 정보는 노트북의 로컬 상태에 저장됩니다. Bongo Cat은 설치되지만 노트북 키보드 장치명이 확인되지 않아 자동 시작은 하지 않습니다. 사용하려면 `bongocat-find-devices` 출력으로 장치명을 확인해 노트북 호스트 설정에 지정하세요.
+
+## `stringju-work` Orca 원격 서버
+
+이 호스트에서는 부팅 시 `stringju` 사용자로 `orca serve`가 시작됩니다. WARP 인터페이스의 현재 IPv4를 연결 주소로 사용하며, 포트 6768은 기존 방화벽 설정상 **WARP를 통해서만** 접근할 수 있습니다. 로그인·GUI 창 없이 동작하며 앱 메뉴의 Orca 항목은 설치하지 않습니다. AppImage의 FHS 셸이 붙이는 `appimage-run-fhsenv:` 프롬프트 접두사도 제거해 원격 터미널에 `stringju@stringju-work`가 표시되도록 했습니다. `git`, `gh`, `ps`, `Xvfb`를 Orca AppImage 실행 환경에 포함해 프로젝트 탐색 및 헤드리스 시작 오류를 방지합니다. 자동 최신 버전 다운로드 타이머는 예기치 않은 버전·프로토콜 변경을 막기 위해 제거했습니다.
+
+같은 사용자 프로필을 사용하는 GUI와 `orca serve`를 동시에 실행하지 마세요. 원격 터미널은 서버 재시작 후 새 셸을 열어야 변경된 프롬프트가 보입니다.
+
+```bash
+cd ~/dotfiles
+sudo nixos-rebuild switch --flake .#stringju-work
+systemctl status orca-serve --no-pager
+journalctl -u orca-serve -b --no-pager -n 80
+```
+
+서버 로그의 **새 페어링 URL은 비밀이므로 공유하지 마세요.** MacBook Orca의 Settings → Remote Orca Servers에서 새 서버를 등록하거나 기존 연결을 확인하세요. MacBook에서도 WARP를 켜고, 연결이 안 되면 `nc -vz <로그에 표시된 WARP IP> 6768`로 도달 여부를 검사하세요. 해당 조직의 사설망 라우팅 정책이 이 장치 간 통신을 허용해야 합니다. 기존 GUI가 사용한 주소/연결 토큰은 서버 모드 전환 후 다시 페어링해야 할 수 있습니다.
+
+업데이트는 수동으로만 실행합니다. 먼저 서버를 중지하고 백업을 확인한 뒤 `sudo systemctl start orca-ade-update.service`, `sudo systemctl start orca-serve.service` 순서로 진행하세요.
+
+## `stringju-work`에서 sops-nix 사용하기
+
+이 호스트에만 sops-nix 모듈과 `sops`, `age`, `ssh-to-age` 명령을 설치했습니다. 현재 등록된 secret은 없으므로 암호화 파일을 준비하기 전에도 빌드할 수 있습니다. 시스템은 기존 `/etc/ssh/ssh_host_ed25519_key`로 복호화합니다. **이 개인 키는 git에 추가하지 마세요.** SSH 호스트 키를 교체하거나 OS를 재설치하기 전에는 키를 안전하게 백업하거나 암호화 파일을 새 수신자 키로 재암호화해야 합니다.
+
+1. 적용: `sudo nixos-rebuild switch --flake .#stringju-work` (먼저 위의 호스트별 하드웨어·네트워크 설정을 확인하세요).
+2. 편집용 개인 키를 생성해 안전하게 백업합니다(기존 키가 있으면 재생성하지 마세요):
+
+   ```bash
+   mkdir -p -m 700 ~/.config/sops/age
+   age-keygen -o ~/.config/sops/age/keys.txt
+   chmod 600 ~/.config/sops/age/keys.txt
+   age-keygen -y ~/.config/sops/age/keys.txt          # 편집자 공개 키
+   ssh-to-age < /etc/ssh/ssh_host_ed25519_key.pub      # 이 PC의 공개 키
+   ```
+
+3. 저장소 루트에 `.sops.yaml`을 만들고 출력된 **두 공개 키**를 넣습니다(아래 문자열은 예시 자리표시자입니다):
+
+   ```yaml
+   creation_rules:
+     - path_regex: secrets/stringju-work\.yaml$
+       age: >-
+         age1YOUR_PERSONAL_PUBLIC_KEY,
+         age1YOUR_HOST_PUBLIC_KEY
+   ```
+
+4. `mkdir -p secrets && sops secrets/stringju-work.yaml`로 파일을 열고, 편집기에서 `example: 실제값`처럼 입력·저장합니다. **평문 파일을 저장소에 만들거나 커밋하지 마세요.** `.sops.yaml`은 키 목록만 담고, `secrets/stringju-work.yaml`은 암호문이어야 합니다.
+5. `hosts/stringju-work/configuration.nix`에 필요한 항목을 선언합니다(파일을 만든 다음):
+
+   ```nix
+   sops.defaultSopsFile = ../../secrets/stringju-work.yaml;
+   sops.secrets.example = { }; # /run/secrets/example, 기본 root 전용
+   ```
+
+   서비스를 연결할 때는 암호 문자열 대신 `config.sops.secrets.example.path`를 해당 서비스의 파일 경로 옵션에 전달하세요. `git add .sops.yaml secrets/stringju-work.yaml hosts/stringju-work/configuration.nix` 후 `sudo nixos-rebuild switch --flake .#stringju-work`로 적용합니다. `sudo ls -l /run/secrets/example`로 배포 여부를 확인할 수 있습니다. `sops secrets/stringju-work.yaml`로 수정하고, 수신자를 바꾸면 `sops updatekeys secrets/stringju-work.yaml`을 실행하세요.
+
 ## 규칙
 
 - 여러 기기에 공통으로 쓰는 설정은 `modules/nixos/common.nix`에 둡니다.
 - hostname, hardware, bootloader, GPU, 디스크, 기기별 패키지는 `hosts/<hostname>/configuration.nix`에 둡니다.
 - `/etc/nixos/hardware-configuration.nix`는 기기마다 다르므로 반드시 host 디렉터리에 따로 보관합니다.
-- 비밀번호, 토큰, 개인 키 같은 secret은 git에 커밋하지 않습니다.
+- 비밀번호, 토큰, 개인 키의 **평문**은 git에 커밋하지 않습니다. sops로 암호화한 파일만 커밋합니다.
