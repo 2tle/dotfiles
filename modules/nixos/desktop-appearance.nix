@@ -42,7 +42,7 @@ in
       "modules-center": [],
       "modules-right": ["network", "pulseaudio", "tray", "clock"],
       "custom/appmenu": {
-        "format": "<span font_family='Material Symbols Outlined' size='large'>apps</span>  앱 메뉴",
+        "format": "앱 메뉴",
         "tooltip": "앱 목록 열기",
         "on-click": "${pkgs.wofi}/bin/wofi --show drun"
       },
@@ -53,19 +53,14 @@ in
         "persistent-workspaces": {"*": 5}
       },
       "network": {
-        "format-wifi": "<span font_family='Material Symbols Outlined' size='large'>wifi</span>  {essid}",
-        "format-ethernet": "<span font_family='Material Symbols Outlined' size='large'>lan</span>  유선",
-        "format-disconnected": "<span font_family='Material Symbols Outlined' size='large'>wifi_off</span>  오프라인",
+        "format-wifi": "{essid}",
+        "format-ethernet": "유선",
+        "format-disconnected": "오프라인",
         "tooltip": false
       },
       "pulseaudio": {
-        "format": "{icon}  {volume}%",
-        "format-muted": "<span font_family='Material Symbols Outlined' size='large'>volume_off</span>  음소거",
-        "format-icons": {"default": [
-          "<span font_family='Material Symbols Outlined' size='large'>volume_mute</span>",
-          "<span font_family='Material Symbols Outlined' size='large'>volume_down</span>",
-          "<span font_family='Material Symbols Outlined' size='large'>volume_up</span>"
-        ]},
+        "format": "{volume}%",
+        "format-muted": "음소거",
         "on-click": "pavucontrol",
         "tooltip": false
       },
@@ -96,11 +91,15 @@ in
     #custom-appmenu {
       color: #161616;
       font-weight: 700;
-      padding: 0 13px;
+      padding: 0 13px 0 32px;
+      background-image: url("/etc/xdg/waybar/icons/appmenu.svg");
+      background-size: 17px 17px;
+      background-position: 10px center;
+      background-repeat: no-repeat;
     }
     #custom-appmenu:hover, #workspaces button:hover,
     #network:hover, #pulseaudio:hover, #clock:hover {
-      background: rgba(0, 0, 0, 0.08);
+      background-color: rgba(0, 0, 0, 0.08);
     }
     #workspaces button {
       color: #333333;
@@ -112,7 +111,18 @@ in
       background: rgba(0, 0, 0, 0.10);
       font-weight: 700;
     }
-    #network, #pulseaudio, #clock { padding: 0 9px; }
+    #network, #pulseaudio {
+      padding: 0 9px 0 29px;
+      background-size: 17px 17px;
+      background-position: 8px center;
+      background-repeat: no-repeat;
+    }
+    #network { background-image: url("/etc/xdg/waybar/icons/wifi.svg"); }
+    #network.ethernet { background-image: url("/etc/xdg/waybar/icons/ethernet.svg"); }
+    #network.disconnected { background-image: url("/etc/xdg/waybar/icons/offline.svg"); }
+    #pulseaudio { background-image: url("/etc/xdg/waybar/icons/volume.svg"); }
+    #pulseaudio.muted { background-image: url("/etc/xdg/waybar/icons/muted.svg"); }
+    #clock { padding: 0 9px; }
     #tray { padding: 0 6px; }
     #clock { color: #161616; font-weight: 600; }
     tooltip {

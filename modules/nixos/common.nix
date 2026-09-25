@@ -30,6 +30,7 @@ in
     ./performance.nix
     ./pi.nix
     ./orca-ade.nix
+    ./waybar-icons.nix
   ];
 
   # Networking
