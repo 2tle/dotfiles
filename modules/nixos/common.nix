@@ -5,6 +5,12 @@ let
     builtins.attrNames (builtins.readDir ../../background)
   );
   wallpaperPaths = builtins.map (name: "${../../background}/${name}") wallpaperNames;
+  cozyPawsCursors = pkgs.runCommand "cozypaws-cursors" { nativeBuildInputs = [ pkgs.unzip ]; } ''
+    unzip -q ${../../resources/CozyPaws-Hyprland-Full-PureSVG.zip} -d unpacked
+    mkdir -p $out/share/icons
+    cp -r unpacked/CozyPaws-Cursors/CozyPaws \
+      unpacked/CozyPaws-Cursors/CozyPaws-XCursor $out/share/icons/
+  '';
   catppuccinLogin = (pkgs.catppuccin-sddm.override {
     loginBackground = true;
     clockEnabled = false;
@@ -81,7 +87,7 @@ in
     bind = SUPER, Return, exec, kitty
     bind = SUPER, E, exec, kitty -e mc
     bind = SUPER, Q, killactive,
-    exec-once = hyprctl setcursor Bibata-Modern-Classic 24
+    exec-once = hyprctl setcursor CozyPaws 32
   '';
 
   # System-wide Kitty default; user config can override it.
@@ -92,25 +98,27 @@ in
   # Prefer native Wayland for Chromium/Electron applications
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";
-    XCURSOR_THEME = "Bibata-Modern-Classic";
-    XCURSOR_SIZE = "24";
+    HYPRCURSOR_THEME = "CozyPaws";
+    HYPRCURSOR_SIZE = "32";
+    XCURSOR_THEME = "CozyPaws-XCursor";
+    XCURSOR_SIZE = "32";
   };
 
-  # Provide the same cursor to X11 and GTK apps outside Hyprland.
+  # Use the matching XCursor theme for X11 and GTK apps.
   environment.etc."icons/default/index.theme".text = ''
     [Icon Theme]
-    Inherits=Bibata-Modern-Classic
+    Inherits=CozyPaws-XCursor
   '';
   environment.etc."gtk-3.0/settings.ini".text = ''
     [Settings]
-    gtk-cursor-theme-name=Bibata-Modern-Classic
-    gtk-cursor-theme-size=24
+    gtk-cursor-theme-name=CozyPaws-XCursor
+    gtk-cursor-theme-size=32
     gtk-font-name=Pretendard JP 11
   '';
   environment.etc."gtk-4.0/settings.ini".text = ''
     [Settings]
-    gtk-cursor-theme-name=Bibata-Modern-Classic
-    gtk-cursor-theme-size=24
+    gtk-cursor-theme-name=CozyPaws-XCursor
+    gtk-cursor-theme-size=32
     gtk-font-name=Pretendard JP 11
   '';
 
@@ -161,7 +169,7 @@ in
   # System packages shared by machines
   environment.systemPackages = with pkgs; [
     catppuccinLogin
-    bibata-cursors
+    cozyPawsCursors
 
     # Development tools
     vim
