@@ -290,7 +290,7 @@ in
       "modules-center": [],
       "modules-right": ["network", "pulseaudio", "tray", "clock"],
       "custom/appmenu": {
-        "format": "◈  앱 메뉴",
+        "format": "<span font_family='Material Symbols Outlined' size='large'>apps</span>  앱 메뉴",
         "tooltip": "앱 목록 열기",
         "on-click": "${pkgs.wofi}/bin/wofi --show drun"
       },
@@ -301,15 +301,19 @@ in
         "persistent-workspaces": {"*": 5}
       },
       "network": {
-        "format-wifi": "◉  {essid}",
-        "format-ethernet": "◆  유선",
-        "format-disconnected": "○  오프라인",
+        "format-wifi": "<span font_family='Material Symbols Outlined' size='large'>wifi</span>  {essid}",
+        "format-ethernet": "<span font_family='Material Symbols Outlined' size='large'>lan</span>  유선",
+        "format-disconnected": "<span font_family='Material Symbols Outlined' size='large'>wifi_off</span>  오프라인",
         "tooltip": false
       },
       "pulseaudio": {
         "format": "{icon}  {volume}%",
-        "format-muted": "Muted",
-        "format-icons": {"default": ["♪", "♫"]},
+        "format-muted": "<span font_family='Material Symbols Outlined' size='large'>volume_off</span>  음소거",
+        "format-icons": {"default": [
+          "<span font_family='Material Symbols Outlined' size='large'>volume_mute</span>",
+          "<span font_family='Material Symbols Outlined' size='large'>volume_down</span>",
+          "<span font_family='Material Symbols Outlined' size='large'>volume_up</span>"
+        ]},
         "on-click": "pavucontrol",
         "tooltip": false
       },
@@ -328,34 +332,37 @@ in
       border: none;
     }
     window#waybar {
-      background: rgba(24, 27, 34, 0.90);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-      color: #f4f5f7;
+      background: transparent;
+      color: #161616;
+    }
+    .modules-left, .modules-right {
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
     }
     .modules-left { padding-left: 10px; }
     .modules-right { padding-right: 12px; }
     #custom-appmenu {
-      color: #ffffff;
+      color: #161616;
       font-weight: 700;
       padding: 0 13px;
     }
     #custom-appmenu:hover, #workspaces button:hover,
     #network:hover, #pulseaudio:hover, #clock:hover {
-      background: rgba(255, 255, 255, 0.12);
+      background: rgba(0, 0, 0, 0.08);
     }
     #workspaces button {
-      color: #abb2c0;
+      color: #333333;
       padding: 0 9px;
       border-radius: 5px;
     }
     #workspaces button.active {
-      color: #ffffff;
-      background: rgba(255, 255, 255, 0.18);
+      color: #000000;
+      background: rgba(0, 0, 0, 0.10);
       font-weight: 700;
     }
     #network, #pulseaudio, #clock { padding: 0 9px; }
     #tray { padding: 0 6px; }
-    #clock { color: #ffffff; font-weight: 600; }
+    #clock { color: #161616; font-weight: 600; }
     tooltip {
       background: #20232a;
       color: #f4f5f7;

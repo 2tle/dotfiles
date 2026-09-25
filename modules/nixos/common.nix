@@ -81,6 +81,7 @@ in
     bind = SUPER, Return, exec, kitty
     bind = SUPER, E, exec, kitty -e mc
     bind = SUPER, Q, killactive,
+    exec-once = hyprctl setcursor Bibata-Modern-Classic 24
   '';
 
   # System-wide Kitty default; user config can override it.
@@ -91,7 +92,25 @@ in
   # Prefer native Wayland for Chromium/Electron applications
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";
+    XCURSOR_THEME = "Bibata-Modern-Classic";
+    XCURSOR_SIZE = "24";
   };
+
+  # Provide the same cursor to X11 and GTK apps outside Hyprland.
+  environment.etc."icons/default/index.theme".text = ''
+    [Icon Theme]
+    Inherits=Bibata-Modern-Classic
+  '';
+  environment.etc."gtk-3.0/settings.ini".text = ''
+    [Settings]
+    gtk-cursor-theme-name=Bibata-Modern-Classic
+    gtk-cursor-theme-size=24
+  '';
+  environment.etc."gtk-4.0/settings.ini".text = ''
+    [Settings]
+    gtk-cursor-theme-name=Bibata-Modern-Classic
+    gtk-cursor-theme-size=24
+  '';
 
   # Printing
   services.printing.enable = true;
@@ -127,16 +146,18 @@ in
   # Required for Google Chrome and other unfree packages
   nixpkgs.config.allowUnfree = true;
 
-  # Korean and emoji fonts
+  # Korean, emoji, and consistent outlined icons for Waybar.
   fonts.packages = with pkgs; [
     noto-fonts
     noto-fonts-cjk-sans
     noto-fonts-color-emoji
+    material-symbols
   ];
 
   # System packages shared by machines
   environment.systemPackages = with pkgs; [
     catppuccinLogin
+    bibata-cursors
 
     # Development tools
     vim
