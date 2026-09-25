@@ -9,10 +9,10 @@
 
   networking.hostName = "thinkpad-t14-gen2";
 
-  # Slightly reduce the built-in display's Hyprland scale (from 1.5).
+  # Use 100% scale on the built-in display.
   # External displays keep their automatic settings.
   environment.etc."xdg/hypr/hyprland.conf".text = lib.mkAfter ''
-    monitor = eDP-1, preferred, auto, 1.25
+    monitor = eDP-1, preferred, auto, 1
   '';
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
