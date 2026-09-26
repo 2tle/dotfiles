@@ -10,6 +10,7 @@ let
       "packages": [
         "npm:@juicesharp/rpiv-ask-user-question",
         "npm:pi-web-access",
+        "npm:pi-subagents",
         "npm:@narumitw/pi-usage",
         "npm:@narumitw/pi-accounts",
         "npm:@narumitw/pi-btw",
@@ -67,6 +68,7 @@ in
         set -eu
         ${pi}/bin/pi install npm:@juicesharp/rpiv-ask-user-question
         ${pi}/bin/pi install npm:pi-web-access
+        ${pi}/bin/pi install npm:pi-subagents
         ${pi}/bin/pi install npm:@narumitw/pi-usage
         ${pi}/bin/pi install npm:@narumitw/pi-accounts
         ${pi}/bin/pi install npm:@narumitw/pi-btw
