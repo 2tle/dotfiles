@@ -32,9 +32,14 @@ let
   };
 in
 {
+  # Keep the mount unit's lowerdir stable across rebuilds. A Nix store path
+  # here changes whenever piPackageConfig is rebuilt, causing systemd to try
+  # to reload the live overlay mount (which overlayfs does not support).
+  environment.etc."pi-package-config".source = piPackageConfig;
+
   fileSystems."/home/${username}/.pi" = {
     overlay = {
-      lowerdir = [ "${piPackageConfig}" "${dotfilesDir}/.pi" ];
+      lowerdir = [ "/etc/pi-package-config" "${dotfilesDir}/.pi" ];
       upperdir = "/home/${username}/.local/state/overlays/pi/upper";
       workdir = "/home/${username}/.local/state/overlays/pi/work";
     };
