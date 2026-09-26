@@ -13,10 +13,9 @@
   # External displays keep their automatic settings.
   environment.etc."xdg/hypr/hyprland.conf".text = lib.mkAfter ''
     monitor = eDP-1, preferred, auto, 1
-    input {
-      touchpad {
-        sensitivity = 0.6
-      }
+    device {
+      name = synps/2-synaptics-touchpad
+      sensitivity = 0.6
     }
   '';
 

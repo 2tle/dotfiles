@@ -151,7 +151,7 @@ warp-cli registration new stringju  # 해당 조직에 등록할 때만 (브라�
 warp-cli connect
 ```
 
-WARP 조직 등록 정보는 노트북의 로컬 상태에 저장됩니다. Bongo Cat은 로그인 시 화면 상단에 자동 실행되며, 키 입력이 안 잡히면 노트북에서 `bongocat-find-devices`로 실제 키보드 장치명을 확인해 `hosts/thinkpad-t14-gen2/configuration.nix`의 `inputDeviceNames`를 수정하세요. `input` 그룹 권한 적용에는 재로그인이 필요합니다. 트랙패드 포인터 속도는 노트북에서만 Hyprland `sensitivity = 0.6`으로 설정됩니다.
+WARP 조직 등록 정보는 노트북의 로컬 상태에 저장됩니다. Bongo Cat은 로그인 시 화면 상단에 자동 실행되며, 키 입력이 안 잡히면 노트북에서 `bongocat-find-devices`로 실제 키보드 장치명을 확인해 `hosts/thinkpad-t14-gen2/configuration.nix`의 `inputDeviceNames`를 수정하세요. `input` 그룹 권한 적용에는 재로그인이 필요합니다. 노트북의 `synps/2-synaptics-touchpad`에만 Hyprland 포인터 감도 `0.6`을 적용합니다. 트랙포인트(`tpps/2-elan-trackpoint`)와 외장 마우스 감도는 그대로 유지합니다.
 
 ## `stringju-work` Orca 원격 서버
 
