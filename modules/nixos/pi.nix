@@ -42,6 +42,11 @@ in
   systemd.tmpfiles.rules = [
     "d ${dotfilesDir}/.pi 0755 ${username} users -"
     "d /home/${username}/.pi 0755 ${username} users -"
+    # The mount hides the directory created before it. Its root can inherit
+    # root ownership from a lower layer, making Pi's mkdir ~/.pi/agent fail.
+    # Fix the mounted root itself (without recursively changing private files).
+    "z /home/${username}/.pi 0755 ${username} users -"
+    "d /home/${username}/.pi/agent 0755 ${username} users -"
     "d /home/${username}/.local/state/overlays/pi 0755 ${username} users -"
     "d /home/${username}/.local/state/overlays/pi/upper 0755 ${username} users -"
     "d /home/${username}/.local/state/overlays/pi/work 0755 ${username} users -"

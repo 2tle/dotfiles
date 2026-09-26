@@ -84,7 +84,7 @@ let
     overlay_position=top
     overlay_height=60
     overlay_opacity=0
-    layer=top
+    layer=overlay
     idle_frame=0
     keypress_duration=150
     test_animation_duration=200
@@ -102,7 +102,23 @@ let
     """
         return monitor, text
 
-    def write_config_and_maybe_restart():
+    def stop_child():
+        global child
+        if child is None:
+            return
+        # --watch-config forks a worker; stop the whole process group so an
+        # output-disconnected worker cannot survive a restart and spin.
+        try:
+            os.killpg(child.pid, signal.SIGTERM)
+            child.wait(timeout=2)
+        except ProcessLookupError:
+            pass
+        except subprocess.TimeoutExpired:
+            os.killpg(child.pid, signal.SIGKILL)
+            child.wait()
+        child = None
+
+    def write_config_and_maybe_restart(force_restart=False):
         global last_config, last_monitor, child
         try:
             monitor, text = render_config()
@@ -115,19 +131,14 @@ let
                 f.write(text)
             os.replace(tmp, CONFIG)
             last_config = text
-        if child is None or child.poll() is not None or monitor != last_monitor:
-            if child is not None and child.poll() is None:
-                child.terminate()
-                try:
-                    child.wait(timeout=2)
-                except subprocess.TimeoutExpired:
-                    child.kill()
-            child = subprocess.Popen([BONGOCAT, "--watch-config", "--config", CONFIG])
+        if force_restart or child is None or child.poll() is not None or monitor != last_monitor:
+            stop_child()
+            if monitor:
+                child = subprocess.Popen([BONGOCAT, "--watch-config", "--config", CONFIG], start_new_session=True)
             last_monitor = monitor
 
     def shutdown(signum, frame):
-        if child is not None and child.poll() is None:
-            child.terminate()
+        stop_child()
         raise SystemExit(0)
 
     signal.signal(signal.SIGTERM, shutdown)
@@ -146,12 +157,14 @@ let
                     buf += chunk
                     while b"\n" in buf:
                         line, buf = buf.split(b"\n", 1)
-                        if line.startswith((b"activewindow>>", b"movewindow>>", b"resizewindow>>", b"monitorfocused>>", b"workspace>>")):
+                        if line.startswith((b"monitoradded>>", b"monitorremoved>>", b"monitoraddedv2>>", b"monitorremovedv2>>")):
+                            write_config_and_maybe_restart(force_restart=True)
+                        elif line.startswith((b"activewindow>>", b"movewindow>>", b"resizewindow>>", b"monitorfocused>>", b"workspace>>")):
                             write_config_and_maybe_restart()
         except Exception as exc:
             print(f"bongocat-follow-focus: reconnecting after {exc}", file=sys.stderr)
             time.sleep(1)
-            write_config_and_maybe_restart()
+            write_config_and_maybe_restart(force_restart=True)
   '';
 in
 {

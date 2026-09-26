@@ -117,7 +117,7 @@ git push
 2. 대상 PC의 부팅 방식에 맞춰 `hosts/stringju-work/configuration.nix`에 부트로더(예: UEFI의 systemd-boot) 설정을 추가합니다. 현재 파일에는 부트로더 설정이 없습니다. 실제 기기의 기존 `system.stateVersion`도 확인합니다(`modules/nixos/common.nix`은 26.05). 값이 다르면 공통 파일을 바꾸지 말고 호스트에서 `system.stateVersion = lib.mkForce "기존값";`으로 덮어쓰세요.
 3. `ip -br link`로 유선 인터페이스를 확인합니다. 현재 고정 IP 프로필은 이름을 모르므로 **모든 이더넷 인터페이스에 매칭**됩니다. NIC가 둘 이상이면 `connection."interface-name" = "enp...";`를 `hosts/stringju-work/configuration.nix`의 `stringju-work-wired.connection`에 추가하세요. 같은 LAN에서 `115.145.150.233`이 이 PC에 할당됐는지도 먼저 확인하세요. 잘못된 네트워크에서 적용하면 접속이 끊길 수 있으므로 원격 접속으로 바로 `switch`하지 마세요.
 4. 배경 이미지를 `background/`에 넣고 git에 추가합니다(PNG/JPG/JPEG/BMP/WebP/SVG). 빌드 시 파일이 Nix store에 복사되므로, 이미지를 바꾸면 다시 빌드해야 합니다. 이미지들은 **파일 이름 순서로 1분마다 순환**합니다. `hyprpaper` 자체의 디렉터리·타이머 기능을 사용하므로 런타임 셸이나 `sleep` 루프는 없습니다. `contain` 모드로 화면 비율을 유지하고, 1024×1024 이미지 밖의 남는 화면은 흰색이 되도록 이 호스트의 `hyprpaper` 배경 캔버스를 패치했습니다.
-5. Bongo Cat은 로그인 시 자동 실행됩니다. 키 입력이 안 잡히면 `bongocat-find-devices`로 장치를 확인하고 `programs.wayland-bongocat.inputDeviceNames`를 기기별로 지정하세요. `input` 그룹 추가 후 재로그인이 필요하며, 이 그룹은 키보드 입력 장치에 대한 접근을 허용하므로 신뢰할 수 있는 사용자에게만 부여하세요.
+5. Bongo Cat은 로그인 시 자동 실행되어 활성 창이 있는 모니터 상단을 따라갑니다. 키 입력이 안 잡히면 `bongocat-find-devices`로 장치를 확인하고 `hosts/stringju-work/configuration.nix`의 `keyboard_name`을 수정하세요. `input` 그룹 추가 후 재로그인이 필요하며, 이 그룹은 키보드 입력 장치에 대한 접근을 허용하므로 신뢰할 수 있는 사용자에게만 부여하세요.
 6. OMP는 설치되지만 서비스 계정 인증은 포함되지 않습니다. 대상 PC에서 `omp` 실행 후 `/login openai-codex`, `/login opencode-go`를 각각 진행하세요. 인증 정보/API 키는 **공개 저장소에 커밋하지 마세요**.
 7. Cloudflare WARP 클라이언트와 데몬은 설치·활성화됩니다. 현재 미니 PC처럼 Zero Trust 조직 `stringju`에 연결하려면 대상 PC에서 `warp-cli registration new stringju`로 브라우저 인증을 마친 뒤 `warp-cli connect`를 실행하세요. 기기 등록 정보는 `/var/lib/cloudflare-warp`에 로컬로 저장되며 공개 dotfiles에 포함되지 않습니다. 조직 정책이 Always On이면 이후 연결 상태는 정책에 따릅니다.
 8. 한글 입력기는 공통 Fcitx5 설치를 사용하고, 이 호스트에서 영문(US)·한글을 기본 입력 그룹에 등록해 로그인 시 시작합니다. `Ctrl+Space`로 한/영 입력을 전환하세요. 기존 `~/.config/fcitx5/profile`이 있다면 사용자 설정이 시스템 기본값보다 우선하므로 Fcitx5 설정 도구에서 한글 입력기를 추가하거나 기존 프로필을 정리하세요.
@@ -130,7 +130,7 @@ git add background hosts/stringju-work flake.nix flake.lock
 sudo nixos-rebuild build --flake .#stringju-work
 sudo nixos-rebuild switch --flake .#stringju-work
 ip -4 addr; ip -4 route; resolvectl status
-systemctl --user status fcitx5 stringju-wallpaper wayland-bongocat
+systemctl --user status fcitx5 stringju-wallpaper wayland-bongocat-follow-focus
 systemctl status cloudflare-warp
 warp-cli status
 omp --version
@@ -151,7 +151,7 @@ warp-cli registration new stringju  # 해당 조직에 등록할 때만 (브라�
 warp-cli connect
 ```
 
-WARP 조직 등록 정보는 노트북의 로컬 상태에 저장됩니다. Bongo Cat은 설치되지만 노트북 키보드 장치명이 확인되지 않아 자동 시작은 하지 않습니다. 사용하려면 `bongocat-find-devices` 출력으로 장치명을 확인해 노트북 호스트 설정에 지정하세요.
+WARP 조직 등록 정보는 노트북의 로컬 상태에 저장됩니다. Bongo Cat은 로그인 시 화면 상단에 자동 실행되며, 키 입력이 안 잡히면 노트북에서 `bongocat-find-devices`로 실제 키보드 장치명을 확인해 `hosts/thinkpad-t14-gen2/configuration.nix`의 `inputDeviceNames`를 수정하세요. `input` 그룹 권한 적용에는 재로그인이 필요합니다. 트랙패드 포인터 속도는 노트북에서만 Hyprland `sensitivity = 0.6`으로 설정됩니다.
 
 ## `stringju-work` Orca 원격 서버
 
