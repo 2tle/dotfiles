@@ -297,15 +297,20 @@ in
     {
       "layer": "top",
       "position": "top",
-      "height": 34,
+      "height": 38,
       "spacing": 6,
       "modules-left": ["custom/appmenu", "hyprland/workspaces"],
       "modules-center": [],
-      "modules-right": ["network", "pulseaudio", "tray", "clock"],
+      "modules-right": ["network", "pulseaudio", "tray", "custom/settings", "clock"],
+      "custom/settings": {
+        "format": "설정",
+        "tooltip": "환경설정 열기 (Super+I)",
+        "on-click": "desktop-settings"
+      },
       "custom/appmenu": {
         "format": "앱 메뉴",
         "tooltip": "앱 목록 열기",
-        "on-click": "${pkgs.wofi}/bin/wofi --show drun"
+        "on-click": "${pkgs.wofi}/bin/wofi --show drun --style /etc/xdg/wofi/style.css"
       },
       "hyprland/workspaces": {
         "disable-scroll": true,
@@ -317,13 +322,15 @@ in
         "format-wifi": "{essid}",
         "format-ethernet": "유선",
         "format-disconnected": "오프라인",
-        "tooltip": false
+        "tooltip": "네트워크 설정 열기",
+        "on-click": "${pkgs.networkmanagerapplet}/bin/nm-connection-editor"
       },
       "pulseaudio": {
         "format": "{volume}%",
         "format-muted": "음소거",
-        "on-click": "pavucontrol",
-        "tooltip": false
+        "on-click": "desktop-volume",
+        "on-click-right": "${pkgs.pavucontrol}/bin/pavucontrol",
+        "tooltip": "클릭: 소리 조절 · 우클릭: 출력 장치 설정 · 스크롤: 음량"
       },
       "clock": {
         "format": "{:%m월 %d일  %a  %H:%M}",
@@ -340,17 +347,18 @@ in
       border: none;
     }
     window#waybar {
-      background: transparent;
-      color: #161616;
+      background: rgba(247, 248, 250, 0.94);
+      color: #202b3a;
+      border-bottom: 1px solid #dce2e9;
     }
     .modules-left, .modules-right {
-      background: rgba(255, 255, 255, 0.12);
-      border-radius: 20px;
+      background: transparent;
+      border-radius: 10px;
     }
     .modules-left { padding-left: 10px; }
     .modules-right { padding-right: 12px; }
     #custom-appmenu {
-      color: #161616;
+      color: #202b3a;
       font-weight: 700;
       padding: 0 13px 0 32px;
       background-image: url("/etc/xdg/waybar/icons/appmenu.svg");
@@ -359,17 +367,17 @@ in
       background-repeat: no-repeat;
     }
     #custom-appmenu:hover, #workspaces button:hover,
-    #network:hover, #pulseaudio:hover, #clock:hover {
-      background-color: rgba(0, 0, 0, 0.08);
+    #network:hover, #pulseaudio:hover, #custom-settings:hover, #clock:hover {
+      background-color: #e8eef6;
     }
     #workspaces button {
-      color: #333333;
-      padding: 0 9px;
-      border-radius: 5px;
+      color: #526175;
+      padding: 0 11px;
+      border-radius: 8px;
     }
     #workspaces button.active {
-      color: #000000;
-      background: rgba(0, 0, 0, 0.10);
+      color: #173d69;
+      background: #dce9fa;
       font-weight: 700;
     }
     #network, #pulseaudio {
@@ -383,9 +391,10 @@ in
     #network.disconnected { background-image: url("/etc/xdg/waybar/icons/offline.svg"); }
     #pulseaudio { background-image: url("/etc/xdg/waybar/icons/volume.svg"); }
     #pulseaudio.muted { background-image: url("/etc/xdg/waybar/icons/muted.svg"); }
-    #clock { padding: 0 9px; }
+    #custom-settings { padding: 0 11px; color: #334b68; font-weight: 600; }
+    #clock { padding: 0 12px; }
     #tray { padding: 0 6px; }
-    #clock { color: #161616; font-weight: 600; }
+    #clock { color: #202b3a; font-weight: 600; }
     tooltip {
       background: #20232a;
       color: #f4f5f7;

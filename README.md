@@ -140,6 +140,13 @@ omp --version
 
 패키지는 `flake.lock`에 고정됩니다. 최신 26.05 안정판 패키지로 갱신하려면 `nix flake update` 후 빌드와 검증을 거쳐 적용하세요. 무조건 최상류 최신 Hyprland/Nix를 설치하는 방식은 아닙니다.
 
+## 데스크톱 메뉴와 환경설정
+
+- 상단 **앱 메뉴** 또는 `Super+D`: 앱 검색. 앱 메뉴에서 **환경설정**을 검색해도 됩니다.
+- 상단 **설정** 또는 `Super+I`: 네트워크, 소리·출력 장치, 디스플레이, 외관, 한글 입력 설정 중 선택. 별도의 통합 설정 앱이 아닌 각 설정 도구로 연결됩니다.
+- 상단 음량 표시 클릭: 음소거 및 0~100% 음량 선택 메뉴. 휠로 음량 변경, 우클릭으로 `pavucontrol`의 상세 사운드 설정을 엽니다. 이 메뉴는 슬라이더가 아닌 선택형 팝업입니다.
+- NixOS 시스템 설정 자체는 이 저장소의 `.nix` 파일을 수정한 뒤 `sudo nixos-rebuild switch --flake .#<hostname>`으로 적용합니다.
+
 ## `thinkpad-t14-gen2` 노트북 클라이언트
 
 공통 단축키·로그인 배경·패키지를 사용하고, 미니PC와 동일한 Waybar·Fcitx5·순환 배경 설정을 적용합니다. Cloudflare WARP는 **클라이언트 전용**이며 미니PC의 포워딩·NAT·고정 IP·방화벽 신뢰 인터페이스나 Orca 서버 서비스를 사용하지 않습니다. Orca ADE는 앱 메뉴에서 실행하는 GUI 클라이언트입니다. AppImage는 첫 실행 전 노트북에서 `sudo systemctl start orca-ade-update.service`로 수동 설치해야 합니다.

@@ -11,6 +11,41 @@ let
     cp -r unpacked/CozyPaws-Cursors/CozyPaws \
       unpacked/CozyPaws-Cursors/CozyPaws-XCursor $out/share/icons/
   '';
+  desktopSettings = pkgs.writeShellScriptBin "desktop-settings" ''
+    set -euo pipefail
+    choice="$(${pkgs.coreutils}/bin/printf '%s\n' \
+      '네트워크' '소리 및 출력 장치' '디스플레이' '외관' '키보드 · 한글 입력' \
+      | ${pkgs.wofi}/bin/wofi --show dmenu --prompt '환경설정' --width 400 --height 330 --style /etc/xdg/wofi/style.css)" || exit 0
+    case "$choice" in
+      '네트워크') exec ${pkgs.networkmanagerapplet}/bin/nm-connection-editor ;;
+      '소리 및 출력 장치') exec ${pkgs.pavucontrol}/bin/pavucontrol ;;
+      '디스플레이') exec ${pkgs.wdisplays}/bin/wdisplays ;;
+      '외관') exec ${pkgs.nwg-look}/bin/nwg-look ;;
+      '키보드 · 한글 입력') exec ${pkgs.kdePackages.fcitx5-configtool}/bin/fcitx5-configtool ;;
+    esac
+  '';
+  desktopVolume = pkgs.writeShellScriptBin "desktop-volume" ''
+    set -euo pipefail
+    volume="$(${pkgs.wireplumber}/bin/wpctl get-volume @DEFAULT_AUDIO_SINK@)"
+    choice="$(${pkgs.coreutils}/bin/printf '%s\n' \
+      "현재: $volume" '음소거 전환' \
+      '0%' '10%' '20%' '30%' '40%' '50%' '60%' '70%' '80%' '90%' '100%' \
+      '소리 및 출력 장치 설정' \
+      | ${pkgs.wofi}/bin/wofi --show dmenu --prompt '소리 조절' --width 320 --height 420 --style /etc/xdg/wofi/style.css)" || exit 0
+    case "$choice" in
+      '음소거 전환') ${pkgs.wireplumber}/bin/wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle ;;
+      '소리 및 출력 장치 설정') exec ${pkgs.pavucontrol}/bin/pavucontrol ;;
+      [0-9]*%) ${pkgs.wireplumber}/bin/wpctl set-volume --limit 1.0 @DEFAULT_AUDIO_SINK@ "$choice" ;;
+    esac
+  '';
+  settingsLauncher = pkgs.makeDesktopItem {
+    name = "desktop-settings";
+    desktopName = "환경설정";
+    comment = "네트워크, 소리, 디스플레이, 외관 및 입력기";
+    exec = "${desktopSettings}/bin/desktop-settings";
+    icon = "preferences-system";
+    categories = [ "Settings" ];
+  };
   catppuccinLogin = (pkgs.catppuccin-sddm.override {
     loginBackground = true;
     clockEnabled = false;
@@ -88,6 +123,8 @@ in
     bind = SUPER, Return, exec, kitty
     bind = SUPER, E, exec, kitty -e mc
     bind = SUPER, Q, killactive,
+    bind = SUPER, D, exec, wofi --show drun --style /etc/xdg/wofi/style.css
+    bind = SUPER, I, exec, desktop-settings
     exec-once = hyprctl setcursor CozyPaws 32
   '';
 
@@ -121,6 +158,34 @@ in
     gtk-cursor-theme-name=CozyPaws-XCursor
     gtk-cursor-theme-size=32
     gtk-font-name=Pretendard JP 11
+  '';
+
+  # A consistent launcher style for the app search, settings and volume menus.
+  environment.etc."xdg/wofi/style.css".text = ''
+    * { font-family: "Pretendard JP", "Noto Sans CJK KR", sans-serif; font-size: 14px; }
+    window {
+      background-color: #f7f8fa;
+      color: #202b3a;
+      border: 1px solid #dce2e9;
+      border-radius: 16px;
+    }
+    #outer-box { margin: 14px; }
+    #input {
+      margin-bottom: 12px;
+      padding: 10px 14px;
+      background-color: #ffffff;
+      color: #202b3a;
+      border: 1px solid #dce2e9;
+      border-radius: 10px;
+    }
+    #scroll { margin-top: 2px; }
+    #entry {
+      padding: 9px 12px;
+      border-radius: 9px;
+    }
+    #entry:selected { background-color: #dce9fa; color: #173d69; }
+    #text { color: #202b3a; }
+    #text:selected { color: #173d69; }
   '';
 
   # Printing
@@ -193,6 +258,11 @@ in
     kitty
     waybar
     wofi
+    desktopSettings
+    desktopVolume
+    settingsLauncher
+    wdisplays
+    nwg-look
     dunst
     wl-clipboard
     grim
