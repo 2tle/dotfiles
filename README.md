@@ -109,6 +109,19 @@ git commit -m "Update nixos configuration"
 git push
 ```
 
+## Pi에서 RTK 사용하기
+
+공통 `modules/nixos/pi.nix`는 RTK 바이너리를 설치합니다. `.pi/agent/extensions/rtk.ts`는 기존 `~/.pi` 오버레이를 통해 Pi의 전역 확장으로 로드되어, 지원되는 `bash` 명령만 `rtk rewrite`로 변환합니다. RTK가 명령을 지원하지 않거나 실행에 실패하면 원래 명령을 사용합니다.
+
+```bash
+nh os switch                 # RTK 설치 (최초 적용은 sudo nixos-rebuild switch --flake .#<hostname>)
+rtk --version
+rtk gain --history          # Pi에서 명령을 실행한 뒤 절감 기록 확인
+RTK_DISABLED=1 pi           # 필요한 경우 변환을 일시 중지
+```
+
+기존에 마운트된 `~/.pi` 오버레이는 새 하위 파일을 재마운트 전까지 표시하지 않을 수 있습니다. 시스템 적용 후 재부팅하고 Pi를 다시 시작하세요. 재부팅 전 바로 사용하려면 `mkdir -p ~/.pi/agent/extensions && ln -s ~/nix/dotfiles/.pi/agent/extensions/rtk.ts ~/.pi/agent/extensions/rtk.ts`를 한 번 실행합니다(이미 파일이 있으면 생략).
+
 ## `stringju-work` 준비 및 적용
 
 **이 호스트는 아직 적용하면 안 됩니다.** `hosts/stringju-work/hardware-configuration.nix`는 빌드를 차단하는 자리표시자입니다. 대상 PC에서 다음을 준비하세요.

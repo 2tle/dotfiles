@@ -107,5 +107,7 @@ in
   '';
 
   # Also expose node-gyp's toolchain to interactive `npm install` / `pi install`.
-  environment.systemPackages = [ pi pkgs.python3 pkgs.gcc pkgs.gnumake ];
+  # The Pi extension invokes `rtk rewrite`; expose the same binary to Pi and
+  # interactive shells on every host.
+  environment.systemPackages = [ pi pkgs.rtk pkgs.python3 pkgs.gcc pkgs.gnumake ];
 }
