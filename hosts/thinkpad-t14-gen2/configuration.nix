@@ -1,5 +1,12 @@
 { config, lib, pkgs, ... }:
 
+let
+  bongocatFollowFocus = import ../../modules/nixos/bongocat-follow-focus.nix {
+    inherit pkgs;
+    bongocatPackage = config.programs.wayland-bongocat.package;
+    keyboardName = builtins.head config.programs.wayland-bongocat.inputDeviceNames;
+  };
+in
 {
   imports = [
     ./hardware-configuration.nix
@@ -30,16 +37,25 @@
   # Install the graphical Orca client; do not start orca-serve.
   programs.orca-ade.desktopEntry = true;
 
-  # Keep the cat above the Waybar panel; match the built-in keyboard by name
-  # rather than relying on an unstable /dev/input/event number.
+  # Follow the focused window across laptop and external displays instead of
+  # pinning the cat to the display selected at startup.
   programs.wayland-bongocat = {
     enable = true;
-    autostart = true;
-    layer = "overlay";
-    catXOffset = 0;
-    catHeight = 80;
+    autostart = false;
     inputDevices = [ ];
     inputDeviceNames = [ "AT Translated Set 2 keyboard" ];
+  };
+  systemd.user.services.wayland-bongocat-follow-focus = {
+    description = "Wayland Bongo Cat Overlay following the focused Hyprland window";
+    wantedBy = [ "graphical-session.target" ];
+    partOf = [ "graphical-session.target" ];
+    after = [ "graphical-session.target" ];
+    serviceConfig = {
+      Type = "exec";
+      ExecStart = bongocatFollowFocus;
+      Restart = "on-failure";
+      RestartSec = 2;
+    };
   };
   users.users.stringju.extraGroups = [ "input" ];
 
