@@ -73,7 +73,9 @@ in
     wants = [ "network-online.target" ];
     after = [ "network-online.target" ];
     environment.HOME = "/home/${username}";
-    path = [ pkgs.nodejs pkgs.pnpm ];
+    # @plannotator/webtui pulls in node-pty, which runs node-gyp on Linux.
+    # The service does not inherit the interactive shell's PATH.
+    path = [ pkgs.nodejs pkgs.pnpm pkgs.python3 pkgs.gcc pkgs.gnumake ];
     serviceConfig = {
       Type = "oneshot";
       User = username;
@@ -102,5 +104,6 @@ in
     ${pkgs.systemd}/bin/systemctl start --no-block pi-package-install.service || true
   '';
 
-  environment.systemPackages = [ pi ];
+  # Also expose node-gyp's toolchain to interactive `npm install` / `pi install`.
+  environment.systemPackages = [ pi pkgs.python3 pkgs.gcc pkgs.gnumake ];
 }
