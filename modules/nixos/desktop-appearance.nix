@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   # hyprpaper's contain mode uses a black canvas by default.
@@ -10,6 +10,10 @@ let
   });
 in
 {
+  # Enabled only by hosts with a battery (currently the ThinkPad).
+  options.stringju.waybar.battery.enable = lib.mkEnableOption "a Waybar battery percentage";
+
+  config = {
   # Hyprland does not start XDG autostart entries on its own.
   i18n.inputMethod.fcitx5.settings.inputMethod = {
     GroupOrder."0" = "Default";
@@ -40,14 +44,14 @@ in
       "spacing": 6,
       "modules-left": ["custom/appmenu", "hyprland/workspaces"],
       "modules-center": [],
-      "modules-right": ["network", "pulseaudio", "custom/ime", "custom/settings", "clock"],
+      "modules-right": ["network", "pulseaudio", ${lib.optionalString config.stringju.waybar.battery.enable ''"battery", ''}"custom/ime", "custom/settings", "clock"],
       "custom/settings": {
         "format": "설정",
         "tooltip": "환경설정 열기 (Super+I)",
-        "on-click": "desktop-settings"
+        "on-click": "/run/current-system/sw/bin/desktop-settings"
       },
       "custom/appmenu": {
-        "format": "앱 메뉴",
+        "format": " ",
         "tooltip": "앱 목록 열기",
         "on-click": "${pkgs.wofi}/bin/wofi --show drun --style /etc/xdg/wofi/style.css"
       },
@@ -71,9 +75,18 @@ in
         "format-muted": " ",
         "tooltip-format": "음량 {volume}% · 클릭: 소리 조절 · 우클릭: 출력 장치 · 스크롤: 음량",
         "tooltip-format-muted": "음소거 · 클릭: 소리 조절 · 우클릭: 출력 장치",
-        "on-click": "desktop-volume",
+        "on-click": "/run/current-system/sw/bin/desktop-volume",
         "on-click-right": "${pkgs.pavucontrol}/bin/pavucontrol"
       },
+      ${lib.optionalString config.stringju.waybar.battery.enable ''
+      "battery": {
+        "format": "{capacity}%",
+        "format-charging": "{capacity}%",
+        "states": {"warning": 30, "critical": 15},
+        "tooltip-format": "배터리 {capacity}%",
+        "interval": 30
+      },
+      ''}
       "custom/ime": {
         "exec": "/etc/xdg/waybar/ime-status",
         "return-type": "json",
@@ -98,7 +111,6 @@ in
     window#waybar {
       background: rgba(247, 248, 250, 0.94);
       color: #202b3a;
-      border-bottom: 1px solid #dce2e9;
     }
     .modules-left, .modules-right {
       background: transparent;
@@ -107,12 +119,11 @@ in
     .modules-left { padding-left: 10px; }
     .modules-right { padding-right: 12px; }
     #custom-appmenu {
-      color: #202b3a;
-      font-weight: 700;
-      padding: 0 13px 0 32px;
+      min-width: 18px;
+      padding: 0 10px;
       background-image: url("/etc/xdg/waybar/icons/appmenu.svg");
       background-size: 17px 17px;
-      background-position: 10px center;
+      background-position: center;
       background-repeat: no-repeat;
     }
     #custom-appmenu:hover, #workspaces button:hover,
@@ -149,6 +160,20 @@ in
       font-weight: 700;
     }
     #custom-ime.offline { color: #8793a3; }
+    ${lib.optionalString config.stringju.waybar.battery.enable ''
+    #battery {
+      padding: 0 8px 0 28px;
+      background-image: url("/etc/xdg/waybar/icons/battery.svg");
+      background-size: 18px 18px;
+      background-position: 7px center;
+      background-repeat: no-repeat;
+      font-weight: 600;
+    }
+    #battery.charging { background-image: url("/etc/xdg/waybar/icons/battery-charging.svg"); }
+    #battery.warning { color: #a06a13; }
+    #battery.critical { color: #b44040; }
+    #battery:hover { background-color: #e8eef6; }
+    ''}
     #custom-settings { padding: 0 11px; color: #334b68; font-weight: 600; }
     #clock { padding: 0 12px; }
     #clock { color: #202b3a; font-weight: 600; }
@@ -193,5 +218,6 @@ in
       Restart = "on-failure";
       RestartSec = 3;
     };
+  };
   };
 }

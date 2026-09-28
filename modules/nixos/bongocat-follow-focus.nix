@@ -1,4 +1,4 @@
-{ pkgs, bongocatPackage, keyboardName }:
+{ pkgs, bongocatPackage, keyboardNames }:
 
 pkgs.writeScript "bongocat-follow-focus" ''
   #!${pkgs.python3}/bin/python3
@@ -87,7 +87,7 @@ pkgs.writeScript "bongocat-follow-focus" ''
   sleep_end=06:00
   enable_debug=0
   monitor={monitor}
-  keyboard_name=${keyboardName}
+  ${builtins.concatStringsSep "\n" (map (name: "keyboard_name=${name}") keyboardNames)}
   hotplug_scan_interval=30
   """
       return monitor, text

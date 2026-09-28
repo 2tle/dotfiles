@@ -120,6 +120,25 @@ in
   # System-wide Hyprland keybindings
   environment.etc."xdg/hypr/hyprland.conf".text = ''
     misc:focus_on_activate = true
+
+    # Soft window edges and restrained borders across both desktops.
+    general {
+      border_size = 1
+      gaps_in = 7
+      gaps_out = 14
+      col.active_border = rgba(8aa8ccff)
+      col.inactive_border = rgba(cbd5e1bb)
+    }
+    decoration {
+      rounding = 10
+      shadow {
+        enabled = true
+        range = 12
+        render_power = 2
+        color = rgba(202b3a24)
+      }
+    }
+
     bind = SUPER, Return, exec, kitty
     bind = SUPER, E, exec, kitty -e mc
     bind = SUPER, Q, killactive,
@@ -128,9 +147,44 @@ in
     exec-once = hyprctl setcursor CozyPaws 32
   '';
 
+  # Match the translucent, cool-white Waybar while keeping the wallpaper visible.
   # System-wide Kitty default; user config can override it.
   environment.etc."xdg/kitty/kitty.conf".text = ''
-    background_opacity 0.75
+    foreground #202b3a
+    background #f7f8fa
+    background_opacity 0.84
+    selection_foreground #173d69
+    selection_background #dce9fa
+    cursor #173d69
+    cursor_text_color #f7f8fa
+    url_color #245c93
+
+    font_size 12.5
+    window_padding_width 14
+
+    tab_bar_background #f7f8fa
+    active_tab_background #dce9fa
+    active_tab_foreground #173d69
+    inactive_tab_background #e8eef6
+    inactive_tab_foreground #526175
+
+    # ANSI colors tuned for legibility on the light surface.
+    color0 #202b3a
+    color1 #a53c46
+    color2 #356c5a
+    color3 #896019
+    color4 #245c93
+    color5 #775aa3
+    color6 #216e80
+    color7 #526175
+    color8 #66788d
+    color9 #b44040
+    color10 #2f775c
+    color11 #94681b
+    color12 #346aa0
+    color13 #8867ad
+    color14 #28798b
+    color15 #202b3a
   '';
 
   # Prefer native Wayland for Chromium/Electron applications
@@ -164,12 +218,17 @@ in
   environment.etc."xdg/wofi/style.css".text = ''
     * { font-family: "Pretendard JP", "Noto Sans CJK KR", sans-serif; font-size: 14px; }
     window {
-      background-color: #f7f8fa;
+      background-color: transparent;
       color: #202b3a;
+      border: none;
+    }
+    #outer-box {
+      margin: 0;
+      padding: 14px;
+      background-color: #f7f8fa;
       border: 1px solid #dce2e9;
       border-radius: 16px;
     }
-    #outer-box { margin: 14px; }
     #input {
       margin-bottom: 12px;
       padding: 10px 14px;
@@ -214,6 +273,12 @@ in
       "networkmanager"
       "wheel"
     ];
+  };
+
+  # NixOS rebuild helper on every host. No automatic cleanup or GC.
+  programs.nh = {
+    enable = true;
+    flake = "/home/stringju/nix/dotfiles";
   };
 
   # Firefox can remain installed alongside Chrome

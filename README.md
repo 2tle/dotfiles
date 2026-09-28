@@ -32,8 +32,9 @@ NixOS 설정을 기기별로 관리하기 위한 dotfiles 저장소입니다.
 ### 1. 저장소 클론
 
 ```bash
-git clone https://github.com/<your-github-username>/dotfiles.git ~/dotfiles
-cd ~/dotfiles
+mkdir -p ~/nix
+git clone https://github.com/<your-github-username>/dotfiles.git ~/nix/dotfiles
+cd ~/nix/dotfiles
 ```
 
 ### 2. 기기별 디렉터리 준비
@@ -76,10 +77,17 @@ networking.hostName = "<new-hostname>";
 sudo nixos-rebuild build --flake .#thinkpad-t14-gen2
 ```
 
-문제가 없으면 적용합니다.
+문제가 없으면 적용합니다. 최초 적용에는 아직 `nh`가 없으므로 `nixos-rebuild`를 사용합니다.
 
 ```bash
 sudo nixos-rebuild switch --flake .#thinkpad-t14-gen2
+```
+
+이후 새 셸에서는 공통 설정으로 설치된 `nh`를 사용할 수 있습니다. `NH_FLAKE`는 `/home/stringju/nix/dotfiles`로 설정되며 현재 기기의 hostname에 맞춰 빌드·적용합니다. 자동 정리(GC)는 켜지지 않습니다.
+
+```bash
+nh os build
+nh os switch
 ```
 
 ## 현재 기기에서 바로 적용하기
@@ -92,17 +100,17 @@ sudo nixos-rebuild switch --flake .#thinkpad-t14-gen2
 적용:
 
 ```bash
-cd ~/dotfiles
+cd ~/nix/dotfiles
 sudo nixos-rebuild switch --flake .#thinkpad-t14-gen2
 ```
 
 ## 설정 변경 workflow
 
 ```bash
-cd ~/dotfiles
+cd ~/nix/dotfiles
 $EDITOR modules/nixos/common.nix              # 모든 기기에 적용할 개인 설정
 $EDITOR hosts/thinkpad-t14-gen2/configuration.nix  # 이 기기에만 적용할 설정
-sudo nixos-rebuild switch --flake .#thinkpad-t14-gen2
+nh os switch
 git status
 git add .
 git commit -m "Update nixos configuration"
@@ -138,7 +146,7 @@ RTK_DISABLED=1 pi           # 필요한 경우 변환을 일시 중지
 적용 전/후 확인(대상 PC에서 실행):
 
 ```bash
-cd ~/dotfiles
+cd ~/nix/dotfiles
 git add background hosts/stringju-work flake.nix flake.lock
 sudo nixos-rebuild build --flake .#stringju-work
 sudo nixos-rebuild switch --flake .#stringju-work
@@ -159,11 +167,11 @@ omp --version
 - 상단 **설정** 또는 `Super+I`: 네트워크, 소리·출력 장치, 디스플레이, 외관, 한글 입력 설정 중 선택. 별도의 통합 설정 앱이 아닌 각 설정 도구로 연결됩니다.
 - 상단 네트워크·음량은 작은 단색 아이콘으로 표시하고 연결명·음량은 마우스를 올려 확인합니다. 클릭 기능은 그대로입니다. 한/영 상태는 `A`/`한`으로 표시하며 클릭하면 전환, 우클릭하면 Fcitx5 설정을 엽니다. 모양이 제각각인 앱 트레이는 상단바에서 숨깁니다(다른 앱의 트레이 메뉴도 표시되지 않음).
 - 상단 음량 아이콘 클릭: 음소거 및 0~100% 음량 선택 메뉴. 휠로 음량 변경, 우클릭으로 `pavucontrol`의 상세 사운드 설정을 엽니다. 이 메뉴는 슬라이더가 아닌 선택형 팝업입니다.
-- NixOS 시스템 설정 자체는 이 저장소의 `.nix` 파일을 수정한 뒤 `sudo nixos-rebuild switch --flake .#<hostname>`으로 적용합니다.
+- NixOS 시스템 설정 자체는 이 저장소의 `.nix` 파일을 수정한 뒤 `nh os switch`로 적용합니다(최초 설치 전에는 `sudo nixos-rebuild switch --flake .#<hostname>`).
 
 ## `thinkpad-t14-gen2` 노트북 클라이언트
 
-공통 단축키·로그인 배경·패키지를 사용하고, 미니PC와 동일한 Waybar·Fcitx5·순환 배경 설정을 적용합니다. Cloudflare WARP는 **클라이언트 전용**이며 미니PC의 포워딩·NAT·고정 IP·방화벽 신뢰 인터페이스나 Orca 서버 서비스를 사용하지 않습니다. Orca ADE는 앱 메뉴에서 실행하는 GUI 클라이언트입니다. AppImage는 첫 실행 전 노트북에서 `sudo systemctl start orca-ade-update.service`로 수동 설치해야 합니다.
+공통 단축키·로그인 배경·패키지를 사용하고, 미니PC와 동일한 Waybar·Fcitx5·순환 배경 설정을 적용합니다. 배터리 잔량(%)은 노트북 상단바에만 표시됩니다. Cloudflare WARP는 **클라이언트 전용**이며 미니PC의 포워딩·NAT·고정 IP·방화벽 신뢰 인터페이스나 Orca 서버 서비스를 사용하지 않습니다. Orca ADE는 앱 메뉴에서 실행하는 GUI 클라이언트입니다. AppImage는 첫 실행 전 노트북에서 `sudo systemctl start orca-ade-update.service`로 수동 설치해야 합니다.
 
 ```sh
 sudo nixos-rebuild build --flake .#thinkpad-t14-gen2
@@ -181,7 +189,7 @@ WARP 조직 등록 정보는 노트북의 로컬 상태에 저장됩니다. Bong
 같은 사용자 프로필을 사용하는 GUI와 `orca serve`를 동시에 실행하지 마세요. 원격 터미널은 서버 재시작 후 새 셸을 열어야 변경된 프롬프트가 보입니다.
 
 ```bash
-cd ~/dotfiles
+cd ~/nix/dotfiles
 sudo nixos-rebuild switch --flake .#stringju-work
 systemctl status orca-serve --no-pager
 journalctl -u orca-serve -b --no-pager -n 80

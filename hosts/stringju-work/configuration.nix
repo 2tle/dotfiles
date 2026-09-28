@@ -13,7 +13,7 @@ let
   bongocatFollowFocus = import ../../modules/nixos/bongocat-follow-focus.nix {
     inherit pkgs;
     bongocatPackage = config.programs.wayland-bongocat.package;
-    keyboardName = builtins.head config.programs.wayland-bongocat.inputDeviceNames;
+    keyboardNames = config.programs.wayland-bongocat.inputDeviceNames;
   };
 in
 {

@@ -4,7 +4,7 @@ let
   bongocatFollowFocus = import ../../modules/nixos/bongocat-follow-focus.nix {
     inherit pkgs;
     bongocatPackage = config.programs.wayland-bongocat.package;
-    keyboardName = builtins.head config.programs.wayland-bongocat.inputDeviceNames;
+    keyboardNames = config.programs.wayland-bongocat.inputDeviceNames;
   };
 in
 {
@@ -15,6 +15,19 @@ in
   ];
 
   networking.hostName = "thinkpad-t14-gen2";
+
+  # Only the laptop shows battery percentage in Waybar.
+  stringju.waybar.battery.enable = true;
+  environment.etc."xdg/waybar/icons/battery.svg".text = ''
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#202b3a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="6" width="18" height="12" rx="2.5"/><path d="M22 10v4M5.5 9.5h9v5h-9z" fill="#202b3a" stroke="none"/>
+    </svg>
+  '';
+  environment.etc."xdg/waybar/icons/battery-charging.svg".text = ''
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#202b3a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="6" width="18" height="12" rx="2.5"/><path d="M22 10v4M12.5 8l-4 5h3l-1 3 4-5h-3z" fill="#202b3a" stroke="none"/>
+    </svg>
+  '';
 
   # Use 100% scale on the built-in display.
   # External displays keep their automatic settings.
@@ -43,7 +56,8 @@ in
     enable = true;
     autostart = false;
     inputDevices = [ ];
-    inputDeviceNames = [ "AT Translated Set 2 keyboard" ];
+    # The built-in keyboard and the attached USB keyboard both generate keys.
+    inputDeviceNames = [ "AT Translated Set 2 keyboard" "USB Wired Keyboard" ];
   };
   systemd.user.services.wayland-bongocat-follow-focus = {
     description = "Wayland Bongo Cat Overlay following the focused Hyprland window";
