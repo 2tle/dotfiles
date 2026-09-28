@@ -150,9 +150,9 @@ in
       "spacing": 6,
       "modules-left": ["custom/appmenu", "hyprland/workspaces"],
       "modules-center": [],
-      "modules-right": ["network", "pulseaudio", "custom/ime", "custom/settings", "clock"],
+      "modules-right": ["custom/top-cpu", "custom/top-memory", "network", "pulseaudio", "custom/ime", "custom/settings", "clock"],
       "custom/settings": {
-        "format": "설정",
+        "format": " ",
         "tooltip": "환경설정 열기 (Super+I)",
         "on-click": "desktop-settings"
       },
@@ -166,6 +166,20 @@ in
         "all-outputs": true,
         "format": "{name}",
         "persistent-workspaces": {"*": 5}
+      },
+      "custom/top-cpu": {
+        "exec": "/etc/xdg/waybar/top-usage cpu",
+        "return-type": "json",
+        "format": "{}",
+        "interval": 5,
+        "tooltip": true
+      },
+      "custom/top-memory": {
+        "exec": "/etc/xdg/waybar/top-usage memory",
+        "return-type": "json",
+        "format": "{}",
+        "interval": 5,
+        "tooltip": true
       },
       "network": {
         "format-wifi": " ",
@@ -221,11 +235,12 @@ in
       font-weight: 700;
       padding: 0 13px 0 32px;
       background-image: url("/etc/xdg/waybar/icons/appmenu.svg");
-      background-size: 17px 17px;
+      background-size: 20px 20px;
       background-position: 10px center;
       background-repeat: no-repeat;
     }
     #custom-appmenu:hover, #workspaces button:hover,
+    #custom-top-cpu:hover, #custom-top-memory:hover,
     #network:hover, #pulseaudio:hover, #custom-ime:hover, #custom-settings:hover, #clock:hover {
       background-color: #e8eef6;
     }
@@ -239,10 +254,21 @@ in
       background: #dce9fa;
       font-weight: 700;
     }
+    #custom-top-cpu, #custom-top-memory {
+      padding: 0 6px 0 27px;
+      color: #334b68;
+      font-size: 12px;
+      font-weight: 600;
+      background-size: 20px 20px;
+      background-position: 3px center;
+      background-repeat: no-repeat;
+    }
+    #custom-top-cpu { background-image: url("/etc/xdg/waybar/icons/cpu.svg"); }
+    #custom-top-memory { background-image: url("/etc/xdg/waybar/icons/memory.svg"); }
     #network, #pulseaudio {
       min-width: 26px;
       padding: 0 3px;
-      background-size: 17px 17px;
+      background-size: 20px 20px;
       background-position: center;
       background-repeat: no-repeat;
     }
@@ -259,7 +285,14 @@ in
       font-weight: 700;
     }
     #custom-ime.offline { color: #8793a3; }
-    #custom-settings { padding: 0 11px; color: #334b68; font-weight: 600; }
+    #custom-settings {
+      min-width: 26px;
+      padding: 0 3px;
+      background-image: url("/etc/xdg/waybar/icons/settings.svg");
+      background-size: 20px 20px;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
     #clock { padding: 0 12px; }
     #clock { color: #202b3a; font-weight: 600; }
     tooltip {

@@ -38,6 +38,10 @@ let
       [0-9]*%) ${pkgs.wireplumber}/bin/wpctl set-volume --limit 1.0 @DEFAULT_AUDIO_SINK@ "$choice" ;;
     esac
   '';
+  waybarTopUsage = pkgs.writeScript "waybar-top-usage" ''
+    #!${pkgs.python3}/bin/python3
+    ${builtins.readFile ./waybar-top-usage.py}
+  '';
   settingsLauncher = pkgs.makeDesktopItem {
     name = "desktop-settings";
     desktopName = "환경설정";
@@ -116,6 +120,9 @@ in
     enable = true;
     withUWSM = true;
   };
+
+  # Shared executable for the CPU/RAM Waybar modules on both hosts.
+  environment.etc."xdg/waybar/top-usage".source = waybarTopUsage;
 
   # System-wide Hyprland keybindings
   environment.etc."xdg/hypr/hyprland.conf".text = ''
