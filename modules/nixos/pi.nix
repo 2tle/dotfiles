@@ -20,7 +20,7 @@ let
         "npm:rpiv-todo",
         "npm:pi-powerline-footer",
         "npm:pi-docparser",
-        "npm:@plannotator/pi-extension",
+        "npm:@plannotator/pi-extension@0.20.3",
         "npm:omp-designer",
         "npm:@xynogen/pix-optimizer"
       ]
@@ -93,7 +93,9 @@ in
         ${pi}/bin/pi install npm:rpiv-todo
         ${pi}/bin/pi install npm:pi-powerline-footer
         ${pi}/bin/pi install npm:pi-docparser
-        ${pi}/bin/pi install npm:@plannotator/pi-extension
+        # Newer releases pull in node-pty via @plannotator/webtui; its native
+        # addon build fails on the ThinkPad (missing napi.h).
+        ${pi}/bin/pi install npm:@plannotator/pi-extension@0.20.3
         ${pi}/bin/pi install npm:omp-designer
         ${pi}/bin/pi install npm:@xynogen/pix-optimizer
       '';
