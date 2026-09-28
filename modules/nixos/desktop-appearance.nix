@@ -40,7 +40,7 @@ in
       "spacing": 6,
       "modules-left": ["custom/appmenu", "hyprland/workspaces"],
       "modules-center": [],
-      "modules-right": ["network", "pulseaudio", "tray", "custom/settings", "clock"],
+      "modules-right": ["network", "pulseaudio", "custom/ime", "custom/settings", "clock"],
       "custom/settings": {
         "format": "설정",
         "tooltip": "환경설정 열기 (Super+I)",
@@ -58,24 +58,34 @@ in
         "persistent-workspaces": {"*": 5}
       },
       "network": {
-        "format-wifi": "{essid}",
-        "format-ethernet": "유선",
-        "format-disconnected": "오프라인",
-        "tooltip": "네트워크 설정 열기",
+        "format-wifi": " ",
+        "format-ethernet": " ",
+        "format-disconnected": " ",
+        "tooltip-format-wifi": "{essid} · 신호 {signalStrength}% · 클릭: 네트워크 설정",
+        "tooltip-format-ethernet": "유선 연결 · 클릭: 네트워크 설정",
+        "tooltip-format-disconnected": "오프라인 · 클릭: 네트워크 설정",
         "on-click": "${pkgs.networkmanagerapplet}/bin/nm-connection-editor"
       },
       "pulseaudio": {
-        "format": "{volume}%",
-        "format-muted": "음소거",
+        "format": " ",
+        "format-muted": " ",
+        "tooltip-format": "음량 {volume}% · 클릭: 소리 조절 · 우클릭: 출력 장치 · 스크롤: 음량",
+        "tooltip-format-muted": "음소거 · 클릭: 소리 조절 · 우클릭: 출력 장치",
         "on-click": "desktop-volume",
-        "on-click-right": "${pkgs.pavucontrol}/bin/pavucontrol",
-        "tooltip": "클릭: 소리 조절 · 우클릭: 출력 장치 설정 · 스크롤: 음량"
+        "on-click-right": "${pkgs.pavucontrol}/bin/pavucontrol"
+      },
+      "custom/ime": {
+        "exec": "/etc/xdg/waybar/ime-status",
+        "return-type": "json",
+        "format": "{text}",
+        "interval": 1,
+        "on-click": "${config.i18n.inputMethod.package}/bin/fcitx5-remote -t",
+        "on-click-right": "${pkgs.kdePackages.fcitx5-configtool}/bin/fcitx5-configtool"
       },
       "clock": {
         "format": "{:%m월 %d일  %a  %H:%M}",
         "tooltip": false
-      },
-      "tray": {"spacing": 8}
+      }
     }
   '';
   environment.etc."xdg/waybar/style.css".text = ''
@@ -106,7 +116,7 @@ in
       background-repeat: no-repeat;
     }
     #custom-appmenu:hover, #workspaces button:hover,
-    #network:hover, #pulseaudio:hover, #custom-settings:hover, #clock:hover {
+    #network:hover, #pulseaudio:hover, #custom-ime:hover, #custom-settings:hover, #clock:hover {
       background-color: #e8eef6;
     }
     #workspaces button {
@@ -120,9 +130,10 @@ in
       font-weight: 700;
     }
     #network, #pulseaudio {
-      padding: 0 9px 0 29px;
+      min-width: 26px;
+      padding: 0 3px;
       background-size: 17px 17px;
-      background-position: 8px center;
+      background-position: center;
       background-repeat: no-repeat;
     }
     #network { background-image: url("/etc/xdg/waybar/icons/wifi.svg"); }
@@ -130,9 +141,16 @@ in
     #network.disconnected { background-image: url("/etc/xdg/waybar/icons/offline.svg"); }
     #pulseaudio { background-image: url("/etc/xdg/waybar/icons/volume.svg"); }
     #pulseaudio.muted { background-image: url("/etc/xdg/waybar/icons/muted.svg"); }
+    #custom-ime {
+      min-width: 21px;
+      padding: 0 4px;
+      color: #202b3a;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    #custom-ime.offline { color: #8793a3; }
     #custom-settings { padding: 0 11px; color: #334b68; font-weight: 600; }
     #clock { padding: 0 12px; }
-    #tray { padding: 0 6px; }
     #clock { color: #202b3a; font-weight: 600; }
     tooltip {
       background: #20232a;
