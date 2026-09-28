@@ -13,7 +13,15 @@ let
         "npm:@narumitw/pi-usage",
         "npm:@narumitw/pi-accounts",
         "npm:@narumitw/pi-btw",
-        "npm:@2tle/pi-provider-manager"
+        "npm:@2tle/pi-provider-manager",
+        "npm:@amaster.ai/pi-image-gen",
+        "npm:@henryqw/pi-subagent",
+        "npm:rpiv-todo",
+        "npm:pi-powerline-footer",
+        "npm:pi-docparser",
+        "npm:@plannotator/pi-extension",
+        "npm:omp-designer",
+        "npm:@xynogen/pix-optimizer"
       ]
     }
     EOF
@@ -71,6 +79,14 @@ in
         ${pi}/bin/pi install npm:@narumitw/pi-accounts
         ${pi}/bin/pi install npm:@narumitw/pi-btw
         ${pi}/bin/pi install npm:@2tle/pi-provider-manager
+        ${pi}/bin/pi install npm:@amaster.ai/pi-image-gen
+        ${pi}/bin/pi install npm:@henryqw/pi-subagent
+        ${pi}/bin/pi install npm:rpiv-todo
+        ${pi}/bin/pi install npm:pi-powerline-footer
+        ${pi}/bin/pi install npm:pi-docparser
+        ${pi}/bin/pi install npm:@plannotator/pi-extension
+        ${pi}/bin/pi install npm:omp-designer
+        ${pi}/bin/pi install npm:@xynogen/pix-optimizer
       '';
     };
   };
