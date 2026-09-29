@@ -24,7 +24,7 @@ in
 
   networking.hostName = "stringju-work";
 
-  # Decrypt sops-nix secrets with this machine's existing SSH host key.
+  # Keep sops tooling available for this machine's local workflows.
   sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
   environment.systemPackages = with pkgs; [ sops age ssh-to-age ];
 

@@ -33,11 +33,27 @@ in
   # External displays keep their automatic settings.
   environment.etc."xdg/hypr/hyprland.conf".text = lib.mkAfter ''
     monitor = eDP-1, preferred, auto, 1
+    input {
+      kb_options = korean:ralt_hangul
+    }
     device {
       name = synps/2-synaptics-touchpad
       sensitivity = 0.6
     }
   '';
+
+  # Map the physical AltGr key to Hangul and let Fcitx5 toggle the input method.
+  # Fcitx5 needs the same XKB option for its own Wayland key translation.
+  i18n.inputMethod.fcitx5.settings.globalOptions = {
+    "Hotkey/TriggerKeys" = {
+      "0" = "Control+space";
+      "1" = "Hangul";
+    };
+    Behavior = {
+      OverrideXkbOption = "True";
+      CustomXkbOption = "korean:ralt_hangul";
+    };
+  };
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 

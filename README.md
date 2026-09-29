@@ -199,44 +199,9 @@ journalctl -u orca-serve -b --no-pager -n 80
 
 업데이트는 수동으로만 실행합니다. 먼저 서버를 중지하고 백업을 확인한 뒤 `sudo systemctl start orca-ade-update.service`, `sudo systemctl start orca-serve.service` 순서로 진행하세요.
 
-## `stringju-work`에서 sops-nix 사용하기
-
-이 호스트에만 sops-nix 모듈과 `sops`, `age`, `ssh-to-age` 명령을 설치했습니다. 현재 등록된 secret은 없으므로 암호화 파일을 준비하기 전에도 빌드할 수 있습니다. 시스템은 기존 `/etc/ssh/ssh_host_ed25519_key`로 복호화합니다. **이 개인 키는 git에 추가하지 마세요.** SSH 호스트 키를 교체하거나 OS를 재설치하기 전에는 키를 안전하게 백업하거나 암호화 파일을 새 수신자 키로 재암호화해야 합니다.
-
-1. 적용: `sudo nixos-rebuild switch --flake .#stringju-work` (먼저 위의 호스트별 하드웨어·네트워크 설정을 확인하세요).
-2. 편집용 개인 키를 생성해 안전하게 백업합니다(기존 키가 있으면 재생성하지 마세요):
-
-   ```bash
-   mkdir -p -m 700 ~/.config/sops/age
-   age-keygen -o ~/.config/sops/age/keys.txt
-   chmod 600 ~/.config/sops/age/keys.txt
-   age-keygen -y ~/.config/sops/age/keys.txt          # 편집자 공개 키
-   ssh-to-age < /etc/ssh/ssh_host_ed25519_key.pub      # 이 PC의 공개 키
-   ```
-
-3. 저장소 루트에 `.sops.yaml`을 만들고 출력된 **두 공개 키**를 넣습니다(아래 문자열은 예시 자리표시자입니다):
-
-   ```yaml
-   creation_rules:
-     - path_regex: secrets/stringju-work\.yaml$
-       age: >-
-         age1YOUR_PERSONAL_PUBLIC_KEY,
-         age1YOUR_HOST_PUBLIC_KEY
-   ```
-
-4. `mkdir -p secrets && sops secrets/stringju-work.yaml`로 파일을 열고, 편집기에서 `example: 실제값`처럼 입력·저장합니다. **평문 파일을 저장소에 만들거나 커밋하지 마세요.** `.sops.yaml`은 키 목록만 담고, `secrets/stringju-work.yaml`은 암호문이어야 합니다.
-5. `hosts/stringju-work/configuration.nix`에 필요한 항목을 선언합니다(파일을 만든 다음):
-
-   ```nix
-   sops.defaultSopsFile = ../../secrets/stringju-work.yaml;
-   sops.secrets.example = { }; # /run/secrets/example, 기본 root 전용
-   ```
-
-   서비스를 연결할 때는 암호 문자열 대신 `config.sops.secrets.example.path`를 해당 서비스의 파일 경로 옵션에 전달하세요. `git add .sops.yaml secrets/stringju-work.yaml hosts/stringju-work/configuration.nix` 후 `sudo nixos-rebuild switch --flake .#stringju-work`로 적용합니다. `sudo ls -l /run/secrets/example`로 배포 여부를 확인할 수 있습니다. `sops secrets/stringju-work.yaml`로 수정하고, 수신자를 바꾸면 `sops updatekeys secrets/stringju-work.yaml`을 실행하세요.
-
 ## 규칙
 
 - 여러 기기에 공통으로 쓰는 설정은 `modules/nixos/common.nix`에 둡니다.
 - hostname, hardware, bootloader, GPU, 디스크, 기기별 패키지는 `hosts/<hostname>/configuration.nix`에 둡니다.
 - `/etc/nixos/hardware-configuration.nix`는 기기마다 다르므로 반드시 host 디렉터리에 따로 보관합니다.
-- 비밀번호, 토큰, 개인 키의 **평문**은 git에 커밋하지 않습니다. sops로 암호화한 파일만 커밋합니다.
+- 비밀번호, 토큰, 개인 키 같은 비밀정보는 git에 커밋하지 않습니다.

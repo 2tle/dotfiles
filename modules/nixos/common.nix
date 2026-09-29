@@ -159,7 +159,7 @@ in
   environment.etc."xdg/kitty/kitty.conf".text = ''
     foreground #202b3a
     background #f7f8fa
-    background_opacity 0.84
+    background_opacity 0.80
     selection_foreground #173d69
     selection_background #dce9fa
     cursor #173d69
@@ -232,7 +232,7 @@ in
     #outer-box {
       margin: 0;
       padding: 14px;
-      background-color: #f7f8fa;
+      background-color: rgba(247, 248, 250, 0.80);
       border: 1px solid #dce2e9;
       border-radius: 16px;
     }
@@ -256,6 +256,14 @@ in
 
   # Printing
   services.printing.enable = true;
+  hardware.printers.ensurePrinters = [
+    {
+      name = "Samsung-K3300NR";
+      description = "Samsung K3300NR";
+      deviceUri = "ipp://115.145.150.183/ipp/print";
+      model = "everywhere";
+    }
+  ];
 
   # File manager support: trash, mounts, thumbnails, etc.
   services.gvfs.enable = true;
