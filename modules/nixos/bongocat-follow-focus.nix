@@ -1,12 +1,15 @@
-{ pkgs, bongocatPackage, keyboardNames }:
+{ pkgs, bongocatPackage }:
 
 pkgs.writeScript "bongocat-follow-focus" ''
   #!${pkgs.python3}/bin/python3
   import json
   import os
+  from pathlib import Path
+  import select
   import signal
   import socket
   import subprocess
+  import struct
   import sys
   import time
 
@@ -61,8 +64,32 @@ pkgs.writeScript "bongocat-follow-focus" ''
       x_offset = round(center_x - (monitor["x"] + monitor["width"] / 2))
       return monitor.get("name", ""), x_offset
 
+  def keyboard_devices(sysfs="/sys/class/input", dev_root="/dev/input"):
+      # Linux key codes below BTN_MISC (0x100) are keys, not mouse/gamepad
+      # buttons. Inspect capabilities, never the device's brand or name.
+      # sysfs prints unsigned-long words, most significant word first.
+      word_bits = struct.calcsize("L") * 8
+      devices = []
+      for event in sorted(Path(sysfs).glob("event*")):
+          try:
+              words = (event / "device/capabilities/key").read_text().split()
+              bits = 0
+              for word in words:
+                  bits = (bits << word_bits) | int(word, 16)
+              if bits & ((1 << 256) - 2):
+                  devices.append(f"{dev_root}/{event.name}")
+          except (OSError, ValueError):
+              # A device may disappear during enumeration.
+              continue
+      return devices
+
   def render_config():
       monitor, x_offset = pick_target()
+      devices = keyboard_devices()
+      device_config = "\n".join(f"keyboard_device={device}" for device in devices)
+      # Suppress upstream's fallback to a fixed event node when unplugged.
+      if not devices:
+          device_config = "keyboard_device=/dev/input/bongocat-no-keyboards"
       text = f"""# Auto-generated. Follow the focused Hyprland window.
   cat_x_offset={x_offset}
   cat_y_offset=0
@@ -87,8 +114,8 @@ pkgs.writeScript "bongocat-follow-focus" ''
   sleep_end=06:00
   enable_debug=0
   monitor={monitor}
-  ${builtins.concatStringsSep "\n" (map (name: "keyboard_name=${name}") keyboardNames)}
-  hotplug_scan_interval=30
+  {device_config}
+  hotplug_scan_interval=1
   """
       return monitor, text
 
@@ -140,7 +167,14 @@ pkgs.writeScript "bongocat-follow-focus" ''
           with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as events:
               events.connect(hypr_socket(".socket2.sock"))
               buf = b""
+              next_device_scan = time.monotonic() + 1
               while True:
+                  # Check hotplug with both quiet and busy Hyprland sockets.
+                  if time.monotonic() >= next_device_scan:
+                      write_config_and_maybe_restart()
+                      next_device_scan = time.monotonic() + 1
+                  if not select.select([events], [], [], max(0, next_device_scan - time.monotonic()))[0]:
+                      continue
                   chunk = events.recv(4096)
                   if not chunk:
                       break

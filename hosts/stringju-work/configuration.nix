@@ -13,7 +13,6 @@ let
   bongocatFollowFocus = import ../../modules/nixos/bongocat-follow-focus.nix {
     inherit pkgs;
     bongocatPackage = config.programs.wayland-bongocat.package;
-    keyboardNames = config.programs.wayland-bongocat.inputDeviceNames;
   };
 in
 {
@@ -373,7 +372,9 @@ in
     # A custom service below keeps the cat centered over the focused Hyprland
     # window, so disable the module's static autostart service.
     autostart = false;
-    inputDeviceNames = [ "USB Wired Keyboard" ];
+    # The focus-following wrapper detects all keyboards by key capabilities.
+    inputDevices = [ ];
+    inputDeviceNames = [ ];
   };
   systemd.user.services.wayland-bongocat-follow-focus = {
     description = "Wayland Bongo Cat Overlay following the focused Hyprland window";

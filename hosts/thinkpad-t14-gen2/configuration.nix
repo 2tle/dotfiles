@@ -4,7 +4,6 @@ let
   bongocatFollowFocus = import ../../modules/nixos/bongocat-follow-focus.nix {
     inherit pkgs;
     bongocatPackage = config.programs.wayland-bongocat.package;
-    keyboardNames = config.programs.wayland-bongocat.inputDeviceNames;
   };
 in
 {
@@ -74,8 +73,8 @@ in
     enable = true;
     autostart = false;
     inputDevices = [ ];
-    # The built-in keyboard and the attached USB keyboard both generate keys.
-    inputDeviceNames = [ "AT Translated Set 2 keyboard" "USB Wired Keyboard" ];
+    # The focus-following wrapper detects all keyboards by key capabilities.
+    inputDeviceNames = [ ];
   };
   systemd.user.services.wayland-bongocat-follow-focus = {
     description = "Wayland Bongo Cat Overlay following the focused Hyprland window";
