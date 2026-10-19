@@ -24,6 +24,18 @@ let
       '키보드 · 한글 입력') exec ${pkgs.kdePackages.fcitx5-configtool}/bin/fcitx5-configtool ;;
     esac
   '';
+  desktopMinimize = pkgs.writeScript "desktop-minimize" ''
+    #!${pkgs.python3}/bin/python3
+    import json
+    import subprocess
+
+    hyprctl = "${pkgs.hyprland}/bin/hyprctl"
+    clients = json.loads(subprocess.check_output([hyprctl, "clients", "-j"]))
+    if any(client.get("workspace", {}).get("name") == "special:minimized" for client in clients):
+        subprocess.run([hyprctl, "dispatch", "togglespecialworkspace", "minimized"], check=True)
+    else:
+        subprocess.run([hyprctl, "dispatch", "movetoworkspacesilent", "special:minimized"], check=True)
+  '';
   desktopVolume = pkgs.writeShellScriptBin "desktop-volume" ''
     set -euo pipefail
     volume="$(${pkgs.wireplumber}/bin/wpctl get-volume @DEFAULT_AUDIO_SINK@)"
@@ -151,6 +163,8 @@ in
     bind = SUPER, Q, killactive,
     bind = SUPER, D, exec, wofi --show drun --style /etc/xdg/wofi/style.css
     bind = SUPER, I, exec, desktop-settings
+    # Hide the active window; press again to toggle the hidden-window overlay.
+    bind = SUPER, M, exec, ${desktopMinimize}
     exec-once = hyprctl setcursor CozyPaws 32
   '';
 
