@@ -219,6 +219,9 @@ in
   '';
   systemd.user.services.waybar = {
     description = "Waybar top panel";
+    # Wofi inherits this service's PATH, not Hyprland's login environment.
+    # Use the live system profile so newly installed apps are discoverable.
+    path = [ "/run/current-system/sw" ];
     wantedBy = [ "graphical-session.target" ];
     partOf = [ "graphical-session.target" ];
     after = [ "graphical-session.target" ];
