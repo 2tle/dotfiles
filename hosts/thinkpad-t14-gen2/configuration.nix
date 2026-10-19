@@ -16,6 +16,8 @@ in
 
   networking.hostName = "thinkpad-t14-gen2";
 
+  environment.systemPackages = [ pkgs.zoom-us ];
+
   # Only the laptop shows battery percentage in Waybar.
   stringju.waybar.battery.enable = true;
   environment.etc."xdg/waybar/icons/battery.svg".text = ''
