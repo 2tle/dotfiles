@@ -1,6 +1,12 @@
-{ ... }:
+{ pkgs, ... }:
 
 {
+  # Recent WARP releases invoke /usr/sbin/nft directly instead of searching PATH.
+  # Expose it only in the daemon's mount namespace; keep the host filesystem and
+  # the existing firewall rules unchanged.
+  systemd.services.cloudflare-warp.serviceConfig.BindReadOnlyPaths = [
+    "${pkgs.nftables}/bin/nft:/usr/sbin/nft"
+  ];
   # Keep every WARP executable on the same upstream stable release, independently
   # of the nixpkgs channel. Shared by both hosts through common.nix.
   nixpkgs.overlays = [
