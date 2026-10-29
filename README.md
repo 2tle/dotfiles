@@ -161,6 +161,15 @@ omp --version
 
 패키지는 `flake.lock`에 고정됩니다. 최신 26.05 안정판 패키지로 갱신하려면 `nix flake update` 후 빌드와 검증을 거쳐 적용하세요. 무조건 최상류 최신 Hyprland/Nix를 설치하는 방식은 아닙니다.
 
+## Cloudflare WARP 버전
+
+두 호스트의 WARP는 `modules/nixos/cloudflare-packages.nix`에서 upstream 안정판 **2026.8.2115.0**으로 고정합니다(2026-10-20 출시, 2026-10-23 확인). `warp-cli`, `warp-svc`, `warp-diag`, `warp-dex`, `warp-taskbar`가 함께 갱신됩니다. 확인 당시 고정된 nixpkgs/26.05는 2026.3.846.0, nixpkgs unstable도 2026.8.2110.0으로 upstream보다 뒤처져 있어 별도 overlay를 사용합니다. `cloudflared`, Wrangler, workerd 등 사용하지 않는 제품을 새로 설치하지는 않습니다.
+
+- 최신 버전 확인: [Cloudflare Linux 안정판](https://developers.cloudflare.com/cloudflare-one/team-and-resources/devices/cloudflare-one-client/download/), [공식 amd64 패키지·SHA256](https://pkg.cloudflareclient.com/dists/noble/main/binary-amd64/Packages), [arm64](https://pkg.cloudflareclient.com/dists/noble/main/binary-arm64/Packages).
+- 다음 갱신 시 모듈의 버전과 두 아키텍처의 SHA256을 함께 변경하고 빌드하세요. `nix flake update`만으로 이 고정 버전이 바뀌지는 않습니다.
+- 적용: `sudo nixos-rebuild switch --flake .#<hostname>`. **WARP를 통한 SSH 세션은 데몬 재시작 때 끊길 수 있으므로 로컬 콘솔이나 별도 복구 경로를 확보하세요.** 등록 정보는 그대로 유지하며 다시 등록할 필요가 없습니다.
+- 적용 후 `warp-cli --version`, `warp-cli status`, `systemctl status cloudflare-warp`로 확인하세요.
+
 ## 데스크톱 메뉴와 환경설정
 
 - 상단 **앱 메뉴** 또는 `Super+D`: 앱 검색. 앱 메뉴에서 **환경설정**을 검색해도 됩니다.

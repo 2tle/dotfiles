@@ -78,6 +78,7 @@ let
 in
 {
   imports = [
+    ./cloudflare-packages.nix
     ./performance.nix
     ./pi.nix
     ./orca-ade.nix
